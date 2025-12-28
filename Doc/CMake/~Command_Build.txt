@@ -1,5 +1,5 @@
 !!  Для Windows !!!!
-cd E:\C++\TestCMake
+cd E:\C++\LCH-Farrow
 
 # Удалить старый build
 Remove-Item -Recurse -Force build
@@ -11,7 +11,7 @@ cmake -B build -G "Visual Studio 17 2022"
 cmake --build build --config Release
 
 # Запустить
-.\build\Release\TestCMake.exe
+.\build\Release\LCH-Farrow.exe
 
 ************************************************
 для UBUNTU
@@ -19,19 +19,19 @@ sudo apt-get update
 sudo apt-get install -y cmake ninja-build build-essential
 
 # 2. Перейти в проект
-cd ~/TestCMake  # или путь к вашему проекту
+cd ~/LCH-Farrow  # или путь к вашему проекту
 
 # 3. Собрать
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 
 # 4. Запустить
-./build/TestCMake
+./build/LCH-Farrow
 
 git pull origin main
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
-./build/TestCMake
+./build/LCH-Farrow
 ------------------------------------------------------
 powershell
 cmake -B build -G "Visual Studio 17 2022" -DENABLE_CUDA=ON
@@ -100,7 +100,7 @@ cmake_minimum_required(VERSION 3.20)
 #message(STATUS "ENABLE_OPENCL = '${ENABLE_OPENCL}'")
 #message(STATUS "============================================")
 
-project(TestCMake)
+project(LCH-Farrow)
 
 очистить
 # Ubuntu
@@ -110,3 +110,10 @@ rm -rf CMakeFiles/
 
 # Потом собирай заново
 ./start.sh de
+
+ОБЪЯСНЕНИЕ:
+chmod - команда для изменения прав доступа
+
++x - добавить право на выполнение (execute)
+
+start.sh - файл который делаешь запускаемым

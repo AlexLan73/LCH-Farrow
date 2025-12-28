@@ -147,8 +147,8 @@ full_rebuild() {
 
 run_executable() {
     print_header "Running Executable"
-    if [ -f "./build/TestCMake" ]; then
-        ./build/TestCMake
+    if [ -f "./build/LCH-Farrow" ]; then
+        ./build/LCH-Farrow
     else
         print_error "Executable not found! Build first."
     fi

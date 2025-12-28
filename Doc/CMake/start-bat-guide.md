@@ -186,7 +186,7 @@ echo.
 if "%BUILD_TYPE%"=="Debug" (
     echo 🐞 DEBUG BUILD COMPLETE
     echo.
-    echo 📁 Output: .\build\Debug\TestCMake.exe
+    echo 📁 Output: .\build\Debug\LCH-Farrow.exe
     echo.
     echo 💡 Tips for debugging:
     echo    - Run with Visual Studio debugger
@@ -195,7 +195,7 @@ if "%BUILD_TYPE%"=="Debug" (
 ) else (
     echo ⚡ RELEASE BUILD COMPLETE
     echo.
-    echo 📁 Output: .\build\Release\TestCMake.exe
+    echo 📁 Output: .\build\Release\LCH-Farrow.exe
     echo.
     echo 💡 Optimizations applied:
     echo    - O2 optimization
@@ -217,14 +217,14 @@ if /i "%RUN%"=="Y" (
     echo 🚀 Starting %BUILD_TYPE% executable...
     echo.
     if "%BUILD_TYPE%"=="Debug" (
-        if exist "build\Debug\TestCMake.exe" (
-            .\build\Debug\TestCMake.exe
+        if exist "build\Debug\LCH-Farrow.exe" (
+            .\build\Debug\LCH-Farrow.exe
         ) else (
             echo ❌ Executable not found!
         )
     ) else (
-        if exist "build\Release\TestCMake.exe" (
-            .\build\Release\TestCMake.exe
+        if exist "build\Release\LCH-Farrow.exe" (
+            .\build\Release\LCH-Farrow.exe
         ) else (
             echo ❌ Executable not found!
         )
@@ -233,9 +233,9 @@ if /i "%RUN%"=="Y" (
     echo.
     echo To run manually:
     if "%BUILD_TYPE%"=="Debug" (
-        echo   .\build\Debug\TestCMake.exe
+        echo   .\build\Debug\LCH-Farrow.exe
     ) else (
-        echo   .\build\Release\TestCMake.exe
+        echo   .\build\Release\LCH-Farrow.exe
     )
 )
 
@@ -305,7 +305,7 @@ start.bat
 
 🐞 DEBUG BUILD COMPLETE
 
-📁 Output: .\build\Debug\TestCMake.exe
+📁 Output: .\build\Debug\LCH-Farrow.exe
 
 💡 Tips for debugging:
    - Run with Visual Studio debugger
@@ -350,7 +350,7 @@ Run executable now? (Y/N):
 
 ⚡ RELEASE BUILD COMPLETE
 
-📁 Output: .\build\Release\TestCMake.exe
+📁 Output: .\build\Release\LCH-Farrow.exe
 
 💡 Optimizations applied:
    - O2 optimization

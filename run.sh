@@ -58,7 +58,7 @@ if [ "$1" = "de" ] || [ "$1" = "debug" ]; then
     
     echo ""
     echo "SUCCESS - Debug build complete"
-    echo "Output: ./build/TestCMake"
+    echo "Output: ./build/LCH-Farrow"
     echo ""
     exit 0
 fi
@@ -98,7 +98,7 @@ if [ "$1" = "re" ] || [ "$1" = "release" ]; then
     
     echo ""
     echo "SUCCESS - Release build complete"
-    echo "Output: ./build/TestCMake"
+    echo "Output: ./build/LCH-Farrow"
     echo ""
     exit 0
 fi

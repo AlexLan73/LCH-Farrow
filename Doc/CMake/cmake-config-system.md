@@ -248,8 +248,8 @@ full_rebuild() {
 
 run_executable() {
     print_header "Running Executable"
-    if [ -f "./build/TestCMake" ]; then
-        ./build/TestCMake
+    if [ -f "./build/LCH-Farrow" ]; then
+        ./build/LCH-Farrow
     else
         print_error "Executable not found! Build first."
     fi
@@ -395,8 +395,8 @@ echo.
 echo ================================
 echo    Running Executable
 echo ================================
-if exist "build\Release\TestCMake.exe" (
-    .\build\Release\TestCMake.exe
+if exist "build\Release\LCH-Farrow.exe" (
+    .\build\Release\LCH-Farrow.exe
 ) else (
     echo Executable not found! Build first.
 )

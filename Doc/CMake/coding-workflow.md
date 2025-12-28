@@ -9,7 +9,7 @@
 
 ```bash
 # 1. Перейти в проект
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 
 # 2. Проверить статус (есть ли изменения с сервера)
 git status
@@ -42,7 +42,7 @@ git push
 ### 1.1 Структура файлов (как организовать)
 
 ```
-~/C++/TestCMake/
+~/C++/LCH-Farrow/
 ├── CMakeLists.txt           # Конфигурация сборки
 ├── .gitignore               # Что не загружать на GitHub
 ├── README.md                # Описание проекта
@@ -102,7 +102,7 @@ int multiply(int a, int b) {
 **CMakeLists.txt:**
 ```cmake
 cmake_minimum_required(VERSION 3.20)
-project(TestCMake)
+project(LCH-Farrow)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -129,7 +129,7 @@ target_include_directories(test_app PRIVATE ${CMAKE_SOURCE_DIR}/include)
 ### 2.1 Первая сборка (конфигурация + сборка)
 
 ```bash
-# Находитесь в ~/C++/TestCMake
+# Находитесь в ~/C++/LCH-Farrow
 
 # Шаг 1: Конфигурация (создает папку build и подготавливает)
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -289,7 +289,7 @@ gdb ./build/test_app
 target_include_directories(test_app PRIVATE ${CMAKE_SOURCE_DIR}/include)
 
 # Или абсолютный путь:
-target_include_directories(test_app PRIVATE /home/alex/C++/TestCMake/include)
+target_include_directories(test_app PRIVATE /home/alex/C++/LCH-Farrow/include)
 ```
 
 ### Проблема 2: "undefined reference"
@@ -525,7 +525,7 @@ ctest --build-config Release --verbose
 
 ```bash
 # 1. Перейти в проект
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 
 # 2. Создать структуру (если еще нет)
 mkdir -p src include

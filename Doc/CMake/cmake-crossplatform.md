@@ -7,7 +7,7 @@
 
 ```cmake
 cmake_minimum_required(VERSION 3.20)
-project(TestCMake VERSION 1.0.0 LANGUAGES CXX)
+project(LCH-Farrow VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================================================
 # ЧАСТЬ 1: ОПРЕДЕЛЕНИЕ ОПЕРАЦИОННОЙ СИСТЕМЫ
@@ -266,7 +266,7 @@ cmake --build build --config Release
 
 # Способ 2: На Windows PowerShell с WSL + Ninja
 wsl
-cd /mnt/e/C++/TestCMake
+cd /mnt/e/C++/LCH-Farrow
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 ```
@@ -299,8 +299,8 @@ Compiler: GCC
 Optimization: -O3 -march=native
 
 📁 Структура проекта:
-   Source dir: /home/alex/C++/TestCMake
-   Build dir: /home/alex/C++/TestCMake/build
+   Source dir: /home/alex/C++/LCH-Farrow
+   Build dir: /home/alex/C++/LCH-Farrow/build
 
 📊 Информация о сборке:
    Platform: Linux/WSL
@@ -382,7 +382,7 @@ endif()
 ### Добавить CUDA поддержку
 
 ```cmake
-# После "project(TestCMake..."
+# После "project(LCH-Farrow..."
 
 option(ENABLE_CUDA "Enable CUDA support" OFF)
 
@@ -433,12 +433,12 @@ ctest --verbose
 
 ### Шаг 1: Скопируйте CMakeLists.txt
 
-Замените содержимое вашего `~/C++/TestCMake/CMakeLists.txt` на код выше
+Замените содержимое вашего `~/C++/LCH-Farrow/CMakeLists.txt` на код выше
 
 ### Шаг 2: Создайте структуру проекта (если еще нет)
 
 ```bash
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 
 mkdir -p src include
 
@@ -462,23 +462,23 @@ echo 'int add(int a, int b) { return a + b; }' >> src/mylib.cpp
 ```bash
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
-./build/TestCMake
+./build/LCH-Farrow
 ```
 
 **На Windows (WSL):**
 ```bash
 wsl
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
-./build/TestCMake
+./build/LCH-Farrow
 ```
 
 **На Windows (MSVC):**
 ```powershell
 cmake -B build -G "Visual Studio 16 2019"
 cmake --build build --config Release
-.\build\Release\TestCMake.exe
+.\build\Release\LCH-Farrow.exe
 ```
 
 ---

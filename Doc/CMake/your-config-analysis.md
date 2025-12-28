@@ -1,5 +1,5 @@
 # Анализ вашей конфигурации и рекомендации
-## alex@WIN-V41QB4VHFO9:~/C++/TestCMake
+## alex@WIN-V41QB4VHFO9:~/C++/LCH-Farrow
 
 ---
 
@@ -284,7 +284,7 @@ pip3 install numpy scipy matplotlib
 ## ВАША КОНФИГУРАЦИЯ ПОСЛЕ УСТАНОВОК
 
 ```
-alex@WIN-V41QB4VHFO9:~/C++/TestCMake$ cmake --version && gcc --version && g++ --version && make --version && git --version && ninja --version && nvcc --version && python3 --version
+alex@WIN-V41QB4VHFO9:~/C++/LCH-Farrow$ cmake --version && gcc --version && g++ --version && make --version && git --version && ninja --version && nvcc --version && python3 --version
 
 cmake version 3.28.3 ✅
 gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0 ✅

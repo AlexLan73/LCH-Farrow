@@ -33,7 +33,7 @@ if /i "%1"=="de" (
     
     echo.
     echo SUCCESS - Debug build complete
-    echo Output: ./build/Debug/TestCMake.exe
+    echo Output: ./build/Debug/LCH-Farrow.exe
     echo.
     exit /b 0
 )
@@ -62,7 +62,7 @@ if /i "%1"=="re" (
     
     echo.
     echo SUCCESS - Release build complete
-    echo Output: ./build/Release/TestCMake.exe
+    echo Output: ./build/Release/LCH-Farrow.exe
     echo.
     exit /b 0
 )

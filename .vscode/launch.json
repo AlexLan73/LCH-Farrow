@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C++ Debug: TestCMake (Windows)",
+            "name": "C++ Debug: LCH-Farrow (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/TestCMake.exe",
+            "program": "${workspaceFolder}/build/Debug/LCH-Farrow.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -14,10 +14,10 @@
             "environment": []
         },
         {
-            "name": "C++ Debug: TestCMake (Windows - GDB)",
+            "name": "C++ Debug: LCH-Farrow (Windows - GDB)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/TestCMake.exe",
+            "program": "${workspaceFolder}/build/Debug/LCH-Farrow.exe",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
@@ -35,10 +35,10 @@
             "preLaunchTask": "CMake: build (Debug)"
         },
         {
-            "name": "C++ Debug: TestCMake (Linux)",
+            "name": "C++ Debug: LCH-Farrow (Linux)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/TestCMake",
+            "program": "${workspaceFolder}/build/LCH-Farrow",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",

@@ -109,11 +109,11 @@ CMake Error: The source directory "/home/alex" does not appear to contain CMakeL
 
 ### Решение:
 
-**Вариант А: Перейти в директорию вашего проекта TestCMake**
+**Вариант А: Перейти в директорию вашего проекта LCH-Farrow**
 
 ```bash
 # Вы уже видели эту директорию в приглашении
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 
 # Проверить наличие CMakeLists.txt
 ls -la CMakeLists.txt
@@ -166,7 +166,7 @@ ninja -C build
 
 ```bash
 # Если у вас есть проект в другом месте
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 
 # Убедиться что там есть CMakeLists.txt
 ls CMakeLists.txt
@@ -197,7 +197,7 @@ ninja: fatal: chdir to 'build' - No such file or directory.
 
 ```bash
 # 1. Убедитесь что вы в директории проекта
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 pwd  # Проверить текущую директорию
 
 # 2. Запустить CMake (создаст папку build)
@@ -236,9 +236,9 @@ ninja -C build
 # Перейти в директорию C++
 cd ~/C++
 
-# Создать проект TestCMake (если его еще нет)
-mkdir -p TestCMake
-cd TestCMake
+# Создать проект LCH-Farrow (если его еще нет)
+mkdir -p LCH-Farrow
+cd LCH-Farrow
 
 # Создать структуру папок
 mkdir -p src include build
@@ -254,11 +254,11 @@ ls -la
 ### Шаг 2: Создать CMakeLists.txt
 
 ```bash
-# Находитесь в ~/C++/TestCMake
+# Находитесь в ~/C++/LCH-Farrow
 
 cat > CMakeLists.txt << 'EOF'
 cmake_minimum_required(VERSION 3.20)
-project(TestCMake VERSION 1.0.0 LANGUAGES CXX)
+project(LCH-Farrow VERSION 1.0.0 LANGUAGES CXX)
 
 # Стандарт C++
 set(CMAKE_CXX_STANDARD 17)
@@ -311,7 +311,7 @@ cat src/main.cpp  # Проверить содержимое
 ### Шаг 4: Собрать проект с Ninja
 
 ```bash
-# Текущая директория должна быть ~/C++/TestCMake
+# Текущая директория должна быть ~/C++/LCH-Farrow
 
 # Создать конфигурацию с Ninja
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -343,7 +343,7 @@ ls -la build/test_app
 
 ## БЫСТРАЯ ШПАРГАЛКА КОМАНД
 
-### Если вы в ~/C++/TestCMake:
+### Если вы в ~/C++/LCH-Farrow:
 
 ```bash
 # 1. Первый раз (создает конфигурацию)
@@ -369,7 +369,7 @@ rm -rf build && cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && ninja -C b
 
 ```bash
 # Перейти в проект
-cd ~/C++/TestCMake
+cd ~/C++/LCH-Farrow
 
 # Потом выполнять команды выше
 ```
@@ -401,7 +401,7 @@ cmake --version && gcc --version && g++ --version && make --version && git --ver
 ### Debug CMake конфигурации:
 
 ```bash
-# Находитесь в ~/C++/TestCMake
+# Находитесь в ~/C++/LCH-Farrow
 
 # Verbose режим
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release --debug-output
@@ -456,8 +456,8 @@ nvcc --version
 ### 2️⃣ Перейти в проект
 
 ```bash
-cd ~/C++/TestCMake
-pwd  # Должно вывести: /home/alex/C++/TestCMake
+cd ~/C++/LCH-Farrow
+pwd  # Должно вывести: /home/alex/C++/LCH-Farrow
 ```
 
 ### 3️⃣ Убедиться что есть CMakeLists.txt
@@ -492,10 +492,10 @@ cmake --version && gcc --version && g++ --version && ninja --version && nvcc --v
 
 ```
 Текущее местоположение: /home/alex
-Нужная директория: /home/alex/C++/TestCMake
+Нужная директория: /home/alex/C++/LCH-Farrow
 
 Команды:
-1. cd ~/C++/TestCMake
+1. cd ~/C++/LCH-Farrow
 2. pwd  # проверить что вы там
 3. ls CMakeLists.txt  # проверить файл
 4. cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -508,7 +508,7 @@ cmake --version && gcc --version && g++ --version && ninja --version && nvcc --v
 ## ВЫВОД
 
 **Проблема 1 (CUDA не найдена):** Нужно добавить NVIDIA репозиторий
-**Проблема 2 (CMakeLists.txt не найден):** Нужно перейти в ~/C++/TestCMake
+**Проблема 2 (CMakeLists.txt не найден):** Нужно перейти в ~/C++/LCH-Farrow
 **Проблема 3 (build не существует):** Сначала cmake, потом ninja
 
 Все три проблемы решаются простыми командами выше! 🎯

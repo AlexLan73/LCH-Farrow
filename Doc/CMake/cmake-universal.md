@@ -3,7 +3,7 @@
 
 ```cmake
 cmake_minimum_required(VERSION 3.20)
-project(TestCMake VERSION 1.0.0 LANGUAGES CXX)
+project(LCH-Farrow VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================================================
 # ЧАСТЬ 1: ОПРЕДЕЛЕНИЕ ОПЕРАЦИОННОЙ СИСТЕМЫ
@@ -273,15 +273,15 @@ sudo apt-get install -y cmake ninja-build build-essential
 
 # 2. Клонировать репозиторий (если не клонировали)
 cd ~
-git clone git@github.com:AlexLan73/TestCMake.git
-cd TestCMake
+git clone git@github.com:AlexLan73/LCH-Farrow.git
+cd LCH-Farrow
 
 # 3. Собрать с Ninja
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 ninja -C build
 
 # 4. Запустить
-./build/TestCMake
+./build/LCH-Farrow
 
 # ГОТОВО! ✅
 ```
@@ -293,7 +293,7 @@ ninja -C build
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 make -C build -j$(nproc)
-./build/TestCMake
+./build/LCH-Farrow
 ```
 
 ---

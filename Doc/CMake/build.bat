@@ -100,8 +100,8 @@ echo.
 echo ================================
 echo    Running Executable
 echo ================================
-if exist "build\Release\TestCMake.exe" (
-    .\build\Release\TestCMake.exe
+if exist "build\Release\LCH-Farrow.exe" (
+    .\build\Release\LCH-Farrow.exe
 ) else (
     echo Executable not found! Build first.
 )

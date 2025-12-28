@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(TestCMake VERSION 1.0.0 LANGUAGES CXX)
+project(LCH-Farrow VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================================================
 # ЧАСТЬ 0: ДЕТЕКЦИЯ GPU И CUDA
