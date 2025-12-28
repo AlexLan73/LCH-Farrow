@@ -1,0 +1,112 @@
+!!  Для Windows !!!!
+cd E:\C++\TestCMake
+
+# Удалить старый build
+Remove-Item -Recurse -Force build
+
+# Создать свежий с Visual Studio
+cmake -B build -G "Visual Studio 17 2022"
+
+# Собрать
+cmake --build build --config Release
+
+# Запустить
+.\build\Release\TestCMake.exe
+
+************************************************
+для UBUNTU
+sudo apt-get update
+sudo apt-get install -y cmake ninja-build build-essential
+
+# 2. Перейти в проект
+cd ~/TestCMake  # или путь к вашему проекту
+
+# 3. Собрать
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+ninja -C build
+
+# 4. Запустить
+./build/TestCMake
+
+git pull origin main
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+ninja -C build
+./build/TestCMake
+------------------------------------------------------
+powershell
+cmake -B build -G "Visual Studio 17 2022" -DENABLE_CUDA=ON
+cmake --build build --config Release
+На Linux + NVIDIA GPU:
+bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON
+ninja -C build
+На Linux + AMD GPU (OpenCL):
+bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENCL=ON
+ninja -C build
+Без GPU (только CPU):
+bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=OFF
+ninja -C build
+📋 ЗАМЕНИТЬ CMakeLists.txt:
+Скопируйте новый CMakeLists.txt из документа
+
+Замените текущий в проекте
+
+Коммитьте:
+
+bash
+git add CMakeLists.txt
+git commit -m "Add GPU (CUDA/OpenCL) detection support"
+git push origin main
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+## 🎯 КАК ИСПОЛЬЗОВАТЬ:
+
+### Windows + CUDA:
+```powershell
+cmake -B build -G "Visual Studio 17 2022" -DENABLE_CUDA=ON
+cmake --build build --config Release
+```
+
+### Linux + CUDA:
+```bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=ON
+ninja -C build
+```
+
+### Linux + OpenCL:
+```bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -ENABLE_OPENCL=ON
+ninja -C build
+```
+
+### Без GPU (CPU only):
+```bash
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=OFF
+ninja -C build
+```
+*******************************************************
+cmake_minimum_required(VERSION 3.20)
+
+# DEBUG: Проверяем что CMake получил
+#message(STATUS "============================================")
+#message(STATUS "CMAKE CACHE VARIABLES (from CMakePresets):")
+#message(STATUS "CUDA_ARCH = '${CUDA_ARCH}'")
+#message(STATUS "TYPE_GPU = '${TYPE_GPU}'")
+#message(STATUS "CMAKE_BUILD_TYPE = '${CMAKE_BUILD_TYPE}'")
+#message(STATUS "ENABLE_CUDA = '${ENABLE_CUDA}'")
+#message(STATUS "ENABLE_OPENCL = '${ENABLE_OPENCL}'")
+#message(STATUS "============================================")
+
+project(TestCMake)
+
+очистить
+# Ubuntu
+rm -rf build/
+rm -rf CMakeCache.txt
+rm -rf CMakeFiles/
+
+# Потом собирай заново
+./start.sh de

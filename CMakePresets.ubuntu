@@ -1,0 +1,18 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "linux-main",
+      "description": "Linux - Main Configuration (edit parameters here)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "OFF",
+        "CUDA_ARCH": "75",
+        "TYPE_GPU": "RTX 2080ti"
+      }
+    }
+  ]
+}

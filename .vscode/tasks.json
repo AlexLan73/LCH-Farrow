@@ -1,0 +1,162 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake: configure (Debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--preset",
+                "${command:cmake.activePreset}",
+                "-DCMAKE_BUILD_TYPE=Debug"
+            ],
+            "windows": {
+                "args": [
+                    "--preset",
+                    "windows-main",
+                    "-DCMAKE_BUILD_TYPE=Debug"
+                ]
+            },
+            "linux": {
+                "args": [
+                    "--preset",
+                    "linux-main",
+                    "-DCMAKE_BUILD_TYPE=Debug"
+                ]
+            },
+            "osx": {
+                "args": [
+                    "--preset",
+                    "linux-main",
+                    "-DCMAKE_BUILD_TYPE=Debug"
+                ]
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: configure (Release)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--preset",
+                "${command:cmake.activePreset}",
+                "-DCMAKE_BUILD_TYPE=Release"
+            ],
+            "windows": {
+                "args": [
+                    "--preset",
+                    "windows-main",
+                    "-DCMAKE_BUILD_TYPE=Release"
+                ]
+            },
+            "linux": {
+                "args": [
+                    "--preset",
+                    "linux-main",
+                    "-DCMAKE_BUILD_TYPE=Release"
+                ]
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: build (Debug)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug"
+            ],
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
+            "linux": {
+                "problemMatcher": "$gcc"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "CMake: configure (Debug)",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "CMake: build (Release)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Release"
+            ],
+            "windows": {
+                "problemMatcher": "$msCompile"
+            },
+            "linux": {
+                "problemMatcher": "$gcc"
+            },
+            "group": "build",
+            "dependsOn": "CMake: configure (Release)",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "CMake: clean",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build",
+                "--target",
+                "clean"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "CMake: rebuild (Debug)",
+            "type": "shell",
+            "command": "bash",
+            "windows": {
+                "command": "cmd",
+                "args": [
+                    "/c",
+                    "rmdir /s /q build & cmake --preset windows-main -DCMAKE_BUILD_TYPE=Debug & cmake --build build --config Debug"
+                ]
+            },
+            "linux": {
+                "args": [
+                    "-c",
+                    "rm -rf build && cmake --preset linux-main -DCMAKE_BUILD_TYPE=Debug && cmake --build build"
+                ]
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        }
+    ]
+}

@@ -15,6 +15,12 @@ cmake_install.cmake
 Makefile
 *.cmake
 
+################################################################################
+# CMake Presets (personal build configuration)
+################################################################################
+CMakePresets.json
+CMakeUserPresets.json
+
 # IDE
 #.vscode/*
 #!.vscode/tasks.json

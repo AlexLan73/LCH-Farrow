@@ -1,0 +1,14 @@
+{
+	"cmake.useCMakePresets": "always",
+	"cmake.configurePreset": "${command:cmake.activeConfigurePreset}",
+	"cmake.buildPreset": "${command:cmake.activeBuildPreset}",
+	"cmake.useWSL": false,
+	"workbench.editor.showTabs": "single",
+	"files.associations": {
+		"*.h": "cpp",
+		"*.hpp": "cpp"
+	},
+	"C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+	"C_Cpp.default.intelliSenseMode": "windows-msvc-x64"
+}
+
