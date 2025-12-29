@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstring>
+#include <cstdint>
 #include <stdexcept>
 
 SignalBuffer::SignalBuffer()

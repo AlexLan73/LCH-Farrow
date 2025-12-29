@@ -85,6 +85,14 @@ void ProfilingEngine::ReportMetrics() const {
 }
 
 bool ProfilingEngine::SaveReportToJson(const std::string& filename) const {
+    // Создаём директорию если не существует
+    size_t last_slash = filename.find_last_of("/");
+    if (last_slash != std::string::npos) {
+        std::string dir = filename.substr(0, last_slash);
+        std::string cmd = "mkdir -p " + dir;
+        system(cmd.c_str());
+    }
+    
     std::ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Ошибка: не удалось создать файл " << filename << std::endl;

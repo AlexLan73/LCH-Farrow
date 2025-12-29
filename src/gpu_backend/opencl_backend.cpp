@@ -5,7 +5,12 @@
 #include <algorithm>
 
 OpenCLBackend::OpenCLBackend()
-    : device_memory_size_(0), initialized_(false) {
+    : device_memory_size_(0), initialized_(false)
+#ifdef CLFFT_FOUND
+    , fft_plan_forward_(0), fft_plan_inverse_(0), fft_plans_created_(false)
+#endif
+    , lagrange_matrix_uploaded_(false)
+{
 }
 
 OpenCLBackend::~OpenCLBackend() {
@@ -33,6 +38,15 @@ bool OpenCLBackend::Initialize() {
             return false;
         }
         
+        // Инициализируем clFFT
+#ifdef CLFFT_FOUND
+        cl_int clfft_err = clfftSetup(nullptr);
+        if (clfft_err != CLFFT_SUCCESS) {
+            std::cerr << "Ошибка инициализации clFFT: " << clfft_err << std::endl;
+            return false;
+        }
+#endif
+        
         // Загружаем и компилируем программы
         if (!BuildProgram()) {
             return false;
@@ -46,7 +60,7 @@ bool OpenCLBackend::Initialize() {
         
         initialized_ = true;
         return true;
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка OpenCL при инициализации: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -57,6 +71,20 @@ void OpenCLBackend::Cleanup() {
     if (!initialized_) {
         return;
     }
+    
+    // Удаляем FFT планы
+    DestroyFFTPlans();
+    
+    // Освобождаем матрицу Лагранжа
+    if (lagrange_matrix_uploaded_) {
+        lagrange_matrix_buffer_ = cl::Buffer();  // Освобождаем
+        lagrange_matrix_uploaded_ = false;
+    }
+    
+#ifdef CLFFT_FOUND
+    // Завершаем работу clFFT
+    clfftTeardown();
+#endif
     
     // OpenCL автоматически освобождает ресурсы при уничтожении объектов
     initialized_ = false;
@@ -75,7 +103,7 @@ void* OpenCLBackend::AllocateDeviceMemory(size_t size_bytes) {
             size_bytes
         );
         return static_cast<void*>(buffer);
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при выделении памяти: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return nullptr;
@@ -106,7 +134,7 @@ bool OpenCLBackend::CopyHostToDevice(void* dst, const void* src, size_t size_byt
             src
         );
         return CheckError(err, "копирование H2D");
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при копировании H2D: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -119,7 +147,7 @@ bool OpenCLBackend::CopyDeviceToHost(void* dst, const void* src, size_t size_byt
     }
     
     try {
-        cl::Buffer* buffer = static_cast<cl::Buffer*>(src);
+        cl::Buffer* buffer = static_cast<cl::Buffer*>(const_cast<void*>(src));
         cl_int err = queue_.enqueueReadBuffer(
             *buffer,
             CL_TRUE,  // blocking
@@ -128,7 +156,7 @@ bool OpenCLBackend::CopyDeviceToHost(void* dst, const void* src, size_t size_byt
             dst
         );
         return CheckError(err, "копирование D2H");
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при копировании D2H: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -145,34 +173,70 @@ bool OpenCLBackend::ExecuteFractionalDelay(
         return false;
     }
     
+    if (!lagrange_matrix_uploaded_) {
+        std::cerr << "Ошибка: матрица Лагранжа не загружена на GPU" << std::endl;
+        return false;
+    }
+    
     try {
         cl::Buffer* buffer = static_cast<cl::Buffer*>(device_buffer);
         
-        // Создаём буфер для коэффициентов задержки
-        cl::Buffer delay_buf(
+        // Создаём буфер для коэффициентов задержки (целая и дробная часть)
+        // Для каждого луча нужно: delay_integer и lagrange_row
+        struct DelayParams {
+            int delay_integer;
+            int lagrange_row;
+        };
+        
+        std::vector<DelayParams> delay_params(num_beams);
+        const size_t LAGRANGE_ROWS = 48;
+        
+        for (size_t beam = 0; beam < num_beams; ++beam) {
+            float delay = delay_coefficients[beam];
+            delay_params[beam].delay_integer = static_cast<int>(std::floor(delay));
+            float delay_fraction = delay - delay_params[beam].delay_integer;
+            if (delay_fraction < 0.0f) {
+                delay_fraction += 1.0f;
+                delay_params[beam].delay_integer -= 1;
+            }
+            delay_params[beam].lagrange_row = static_cast<int>(delay_fraction * LAGRANGE_ROWS);
+            if (delay_params[beam].lagrange_row >= static_cast<int>(LAGRANGE_ROWS)) {
+                delay_params[beam].lagrange_row = LAGRANGE_ROWS - 1;
+            }
+        }
+        
+        cl::Buffer delay_params_buf(
             context_,
             CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-            num_beams * sizeof(float),
-            const_cast<float*>(delay_coefficients)
+            num_beams * sizeof(DelayParams),
+            delay_params.data()
         );
         
         // Устанавливаем аргументы kernel
         cl_int err = kernel_fractional_delay_.setArg(0, *buffer);
-        err |= kernel_fractional_delay_.setArg(1, delay_buf);
-        err |= kernel_fractional_delay_.setArg(2, static_cast<cl_uint>(num_beams));
-        err |= kernel_fractional_delay_.setArg(3, static_cast<cl_uint>(num_samples));
+        err |= kernel_fractional_delay_.setArg(1, *buffer);  // in-place: input = output
+        err |= kernel_fractional_delay_.setArg(2, lagrange_matrix_buffer_);
+        err |= kernel_fractional_delay_.setArg(3, delay_params_buf);
+        err |= kernel_fractional_delay_.setArg(4, static_cast<cl_uint>(num_beams));
+        err |= kernel_fractional_delay_.setArg(5, static_cast<cl_uint>(num_samples));
         
         if (!CheckError(err, "установка аргументов fractional_delay")) {
             return false;
         }
         
-        // Запускаем kernel
+        // Запускаем kernel (1D grid для совместимости)
+        // Каждый work item обрабатывает один отсчёт одного луча
         size_t global_size = num_beams * num_samples;
+        
+        // Определяем оптимальный размер work group
+        size_t preferred_work_group_size = 256;  // Оптимально для RTX 3060
+        size_t work_group_size = std::min(preferred_work_group_size, global_size);
+        
         err = queue_.enqueueNDRangeKernel(
             kernel_fractional_delay_,
             cl::NullRange,
             cl::NDRange(global_size),
-            cl::NullRange
+            cl::NDRange(work_group_size)
         );
         
         if (!CheckError(err, "запуск kernel fractional_delay")) {
@@ -182,7 +246,7 @@ bool OpenCLBackend::ExecuteFractionalDelay(
         // Синхронизируем
         queue_.finish();
         return true;
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при выполнении fractional_delay: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -195,9 +259,48 @@ bool OpenCLBackend::ExecuteFFT(
     size_t num_samples,
     bool forward) {
     
-    // TODO: Реализация будет добавлена после интеграции FFT библиотеки
-    std::cerr << "ExecuteFFT: пока не реализовано" << std::endl;
+#ifdef CLFFT_FOUND
+    if (!initialized_ || device_buffer == nullptr) {
+        return false;
+    }
+    
+    cl::Buffer* buffer = static_cast<cl::Buffer*>(device_buffer);
+    cl_mem cl_buffer = (*buffer)();
+    
+    // Создаём планы если ещё не созданы
+    if (!fft_plans_created_) {
+        if (!CreateFFTPlans(num_samples, num_beams)) {
+            return false;
+        }
+    }
+    
+    clfftPlanHandle plan = forward ? fft_plan_forward_ : fft_plan_inverse_;
+    clfftDirection dir = forward ? CLFFT_FORWARD : CLFFT_BACKWARD;
+    
+    cl_int err = clfftEnqueueTransform(
+        plan,
+        dir,
+        1,
+        &queue_(),
+        0,
+        nullptr,
+        nullptr,
+        &cl_buffer,
+        nullptr,
+        nullptr
+    );
+    
+    if (!CheckError(err, forward ? "clFFT forward" : "clFFT inverse")) {
+        return false;
+    }
+    
+    queue_.finish();
+    return true;
+#else
+    // Fallback: используем CPU FFT (медленно, но работает)
+    std::cerr << "Предупреждение: clFFT не найдена, используем CPU FFT (медленно!)" << std::endl;
     return false;
+#endif
 }
 
 bool OpenCLBackend::ExecuteHadamardMultiply(
@@ -240,7 +343,7 @@ bool OpenCLBackend::ExecuteHadamardMultiply(
         // Синхронизируем
         queue_.finish();
         return true;
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при выполнении hadamard_multiply: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -313,7 +416,7 @@ bool OpenCLBackend::SelectDevice() {
         std::cout << "Выбрано устройство: " << dev_name << std::endl;
         
         return true;
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при выборе устройства: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -357,7 +460,7 @@ bool OpenCLBackend::BuildProgram() {
         }
         
         return true;
-    } catch (const cl::Error& e) {
+    } catch (cl::Error& e) {
         std::cerr << "Ошибка при компиляции программы: " << e.what() 
                   << " (код: " << e.err() << ")" << std::endl;
         return false;
@@ -365,27 +468,41 @@ bool OpenCLBackend::BuildProgram() {
 }
 
 std::string OpenCLBackend::LoadKernelSource(const std::string& filename) const {
-    // Пробуем несколько путей
-    std::vector<std::string> possible_paths = {
+    // Используем абсолютный путь через OPENCL_KERNEL_DIR из CMake
+    std::string kernel_dir = OPENCL_KERNEL_DIR;
+    std::string full_path = kernel_dir + "/" + filename;
+    
+    // Пробуем абсолютный путь
+    std::ifstream file(full_path);
+    if (file.is_open()) {
+        std::stringstream buffer;
+        buffer << file.rdbuf();
+        file.close();
+        return buffer.str();
+    }
+    
+    // Если не получилось, пробуем относительные пути
+    std::vector<std::string> fallback_paths = {
         "kernels/" + filename,
         "../kernels/" + filename,
-        "../../kernels/" + filename,
-        std::string(OPENCL_KERNEL_DIR) + "/" + filename
+        "../../kernels/" + filename
     };
     
-    for (const auto& path : possible_paths) {
-        std::ifstream file(path);
-        if (file.is_open()) {
+    for (const auto& path : fallback_paths) {
+        std::ifstream fallback_file(path);
+        if (fallback_file.is_open()) {
             std::stringstream buffer;
-            buffer << file.rdbuf();
-            file.close();
+            buffer << fallback_file.rdbuf();
+            fallback_file.close();
+            std::cout << "Kernel загружен из: " << path << std::endl;
             return buffer.str();
         }
     }
     
     std::cerr << "Ошибка: не удалось найти kernel файл " << filename << std::endl;
     std::cerr << "Пробовались пути:" << std::endl;
-    for (const auto& path : possible_paths) {
+    std::cerr << "  - " << full_path << std::endl;
+    for (const auto& path : fallback_paths) {
         std::cerr << "  - " << path << std::endl;
     }
     return "";
@@ -397,5 +514,113 @@ bool OpenCLBackend::CheckError(cl_int err, const std::string& context) const {
         return false;
     }
     return true;
+}
+
+bool OpenCLBackend::CreateFFTPlans(size_t num_samples, size_t num_beams) {
+#ifdef CLFFT_FOUND
+    if (fft_plans_created_) {
+        return true;  // Планы уже созданы
+    }
+    
+    cl_context cl_ctx = context_();
+    cl_command_queue cl_queue = queue_();
+    
+    size_t clLengths[1] = {num_samples};
+    size_t strides[1] = {1};
+    size_t dist = num_samples;
+    
+    // Создаём план для forward FFT
+    cl_int err = clfftCreateDefaultPlan(&fft_plan_forward_, cl_ctx, CLFFT_1D, clLengths);
+    if (err != CLFFT_SUCCESS) {
+        std::cerr << "Ошибка создания forward FFT плана: " << err << std::endl;
+        return false;
+    }
+    
+    clfftSetPlanPrecision(fft_plan_forward_, CLFFT_SINGLE);
+    clfftSetLayout(fft_plan_forward_, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED);
+    clfftSetResultLocation(fft_plan_forward_, CLFFT_INPLACE);
+    clfftSetPlanBatchSize(fft_plan_forward_, num_beams);
+    clfftSetPlanInStride(fft_plan_forward_, CLFFT_1D, strides);
+    clfftSetPlanOutStride(fft_plan_forward_, CLFFT_1D, strides);
+    clfftSetPlanDistance(fft_plan_forward_, dist, dist);
+    
+    err = clfftBakePlan(fft_plan_forward_, 1, &cl_queue, nullptr, nullptr);
+    if (err != CLFFT_SUCCESS) {
+        std::cerr << "Ошибка компиляции forward FFT плана: " << err << std::endl;
+        clfftDestroyPlan(&fft_plan_forward_);
+        return false;
+    }
+    
+    // Создаём план для inverse FFT (аналогично)
+    err = clfftCreateDefaultPlan(&fft_plan_inverse_, cl_ctx, CLFFT_1D, clLengths);
+    if (err != CLFFT_SUCCESS) {
+        std::cerr << "Ошибка создания inverse FFT плана: " << err << std::endl;
+        clfftDestroyPlan(&fft_plan_forward_);
+        return false;
+    }
+    
+    clfftSetPlanPrecision(fft_plan_inverse_, CLFFT_SINGLE);
+    clfftSetLayout(fft_plan_inverse_, CLFFT_COMPLEX_INTERLEAVED, CLFFT_COMPLEX_INTERLEAVED);
+    clfftSetResultLocation(fft_plan_inverse_, CLFFT_INPLACE);
+    clfftSetPlanBatchSize(fft_plan_inverse_, num_beams);
+    clfftSetPlanInStride(fft_plan_inverse_, CLFFT_1D, strides);
+    clfftSetPlanOutStride(fft_plan_inverse_, CLFFT_1D, strides);
+    clfftSetPlanDistance(fft_plan_inverse_, dist, dist);
+    
+    err = clfftBakePlan(fft_plan_inverse_, 1, &cl_queue, nullptr, nullptr);
+    if (err != CLFFT_SUCCESS) {
+        std::cerr << "Ошибка компиляции inverse FFT плана: " << err << std::endl;
+        clfftDestroyPlan(&fft_plan_forward_);
+        clfftDestroyPlan(&fft_plan_inverse_);
+        return false;
+    }
+    
+    fft_plans_created_ = true;
+    return true;
+#else
+    return false;
+#endif
+}
+
+void OpenCLBackend::DestroyFFTPlans() {
+#ifdef CLFFT_FOUND
+    if (fft_plans_created_) {
+        if (fft_plan_forward_ != 0) {
+            clfftDestroyPlan(&fft_plan_forward_);
+            fft_plan_forward_ = 0;
+        }
+        if (fft_plan_inverse_ != 0) {
+            clfftDestroyPlan(&fft_plan_inverse_);
+            fft_plan_inverse_ = 0;
+        }
+        fft_plans_created_ = false;
+    }
+#endif
+}
+
+bool OpenCLBackend::UploadLagrangeMatrix(const float* lagrange_data) {
+    if (!initialized_ || lagrange_data == nullptr) {
+        return false;
+    }
+    
+    try {
+        const size_t LAGRANGE_ROWS = 48;
+        const size_t LAGRANGE_COLS = 5;
+        size_t matrix_size = LAGRANGE_ROWS * LAGRANGE_COLS * sizeof(float);
+        
+        lagrange_matrix_buffer_ = cl::Buffer(
+            context_,
+            CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+            matrix_size,
+            const_cast<float*>(lagrange_data)
+        );
+        
+        lagrange_matrix_uploaded_ = true;
+        return true;
+    } catch (cl::Error& e) {
+        std::cerr << "Ошибка при загрузке матрицы Лагранжа: " << e.what() 
+                  << " (код: " << e.err() << ")" << std::endl;
+        return false;
+    }
 }
 

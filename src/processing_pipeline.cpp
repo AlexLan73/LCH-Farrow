@@ -1,4 +1,5 @@
 #include "processing_pipeline.h"
+#include "lagrange_matrix.h"
 #include <iostream>
 #include <cstring>
 
@@ -33,6 +34,10 @@ bool ProcessingPipeline::ExecuteFull() {
         filter_bank_->PrecomputeReferenceFft();
         profiler_->StopTimer("PrecomputeReferenceFft");
     }
+    
+    // 2. Загрузить матрицу Лагранжа на GPU (если ещё не загружена)
+    // Это делается через FilterBank или отдельно
+    // TODO: Добавить загрузку матрицы Лагранжа
     
     // 2. Выделить память на GPU
     if (!AllocateDeviceMemory()) {

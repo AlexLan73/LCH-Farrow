@@ -121,6 +121,17 @@ public:
      * @return Размер в байтах
      */
     virtual size_t GetDeviceMemorySize() const = 0;
+    
+    /**
+     * @brief Загрузить матрицу Лагранжа на GPU (опционально)
+     * @param lagrange_data Указатель на данные матрицы [48*5]
+     * @return true если успешно (или если не поддерживается)
+     */
+    virtual bool UploadLagrangeMatrix(const float* lagrange_data) {
+        // Базовая реализация - ничего не делает
+        (void)lagrange_data;
+        return true;
+    }
 };
 
 #endif // IGPU_BACKEND_H

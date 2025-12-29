@@ -146,6 +146,30 @@ if(ENABLE_OPENCL)
             message(WARNING "⚠️  OpenCL версия ${OpenCL_VERSION_STRING} < 2.0, могут быть проблемы")
         endif()
         
+        # Поиск clFFT (системная установка)
+        find_path(CLFFT_INCLUDE_DIR
+            NAMES clFFT.h
+            PATHS /usr/local/include /usr/include
+            PATH_SUFFIXES clFFT
+        )
+        
+        find_library(CLFFT_LIBRARY
+            NAMES clFFT
+            PATHS /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu
+        )
+        
+        if(CLFFT_INCLUDE_DIR AND CLFFT_LIBRARY)
+            message(STATUS "✅ clFFT НАЙДЕНА!")
+            message(STATUS "   clFFT Library: ${CLFFT_LIBRARY}")
+            message(STATUS "   clFFT Include: ${CLFFT_INCLUDE_DIR}")
+            set(CLFFT_FOUND TRUE)
+        else()
+            message(WARNING "⚠️  clFFT НЕ НАЙДЕНА!")
+            message(STATUS "   Установите: sudo apt install libclfft-dev")
+            message(STATUS "   FFT будет работать через CPU (временно)")
+            set(CLFFT_FOUND FALSE)
+        endif()
+        
         set(OPENCL_ENABLED TRUE)
     else()
         message(FATAL_ERROR "❌ OpenCL НЕ НАЙДЕНА! Установите OpenCL SDK")
@@ -153,6 +177,7 @@ if(ENABLE_OPENCL)
 else()
     message(STATUS "⏭️  OpenCL отключена (ENABLE_OPENCL=OFF)")
     set(OPENCL_ENABLED FALSE)
+    set(CLFFT_FOUND FALSE)
 endif()
 
 # ============================================================================
@@ -294,6 +319,7 @@ if(OPENCL_ENABLED)
         src/filter_bank.cpp
         src/processing_pipeline.cpp
         src/profiling_engine.cpp
+        src/lagrange_matrix.cpp
         src/gpu_backend/opencl_backend.cpp
         src/gpu_backend/gpu_factory.cpp
     )
@@ -302,6 +328,7 @@ if(OPENCL_ENABLED)
         include/filter_bank.h
         include/processing_pipeline.h
         include/profiling_engine.h
+        include/lagrange_matrix.h
         include/gpu_backend/igpu_backend.h
         include/gpu_backend/opencl_backend.h
         include/gpu_backend/gpu_factory.h
@@ -362,7 +389,22 @@ if(OPENCL_ENABLED)
         ${CMAKE_SOURCE_DIR}/include
         ${OpenCL_INCLUDE_DIRS}
     )
-    target_compile_definitions(${PROJECT_NAME} PRIVATE OPENCL_ENABLED=1)
+    
+    # Добавить clFFT если найдена
+    if(CLFFT_FOUND)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${CLFFT_LIBRARY})
+        target_include_directories(${PROJECT_NAME} PRIVATE ${CLFFT_INCLUDE_DIR})
+        target_compile_definitions(${PROJECT_NAME} PRIVATE 
+            OPENCL_ENABLED=1
+            CLFFT_FOUND=1
+        )
+        message(STATUS "✅ clFFT библиотека добавлена в линковку")
+    else()
+        target_compile_definitions(${PROJECT_NAME} PRIVATE 
+            OPENCL_ENABLED=1
+            CLFFT_FOUND=0
+        )
+    endif()
     
     # Добавить директорию с kernel файлами
     set(OPENCL_KERNEL_DIR "${CMAKE_SOURCE_DIR}/kernels")

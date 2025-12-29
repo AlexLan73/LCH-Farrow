@@ -2,7 +2,11 @@
 #define OPENCL_BACKEND_H
 
 #include "igpu_backend.h"
-#include <CL/cl.hpp>
+#define CL_HPP_ENABLE_EXCEPTIONS
+#include <CL/opencl.hpp>
+#ifdef CLFFT_FOUND
+#include <clFFT.h>
+#endif
 #include <string>
 #include <vector>
 #include <memory>
@@ -52,6 +56,7 @@ public:
     std::string GetBackendName() const override;
     std::string GetDeviceName() const override;
     size_t GetDeviceMemorySize() const override;
+    bool UploadLagrangeMatrix(const float* lagrange_data) override;
 
 private:
     cl::Platform platform_;
@@ -63,6 +68,17 @@ private:
     // Kernels
     cl::Kernel kernel_fractional_delay_;
     cl::Kernel kernel_hadamard_;
+    
+    // clFFT plans
+#ifdef CLFFT_FOUND
+    clfftPlanHandle fft_plan_forward_;
+    clfftPlanHandle fft_plan_inverse_;
+    bool fft_plans_created_;
+#endif
+    
+    // Матрица Лагранжа для дробной задержки
+    cl::Buffer lagrange_matrix_buffer_;
+    bool lagrange_matrix_uploaded_;
     
     // Информация об устройстве
     std::string device_name_;
@@ -87,6 +103,20 @@ private:
      * @return Содержимое файла или пустая строка при ошибке
      */
     std::string LoadKernelSource(const std::string& filename) const;
+    
+    /**
+     * @brief Создать FFT планы для clFFT
+     * @param num_samples Размер FFT
+     * @param num_beams Batch size
+     * @return true если успешно
+     */
+    bool CreateFFTPlans(size_t num_samples, size_t num_beams);
+    
+    /**
+     * @brief Удалить FFT планы
+     */
+    void DestroyFFTPlans();
+    
     
     /**
      * @brief Проверить ошибку OpenCL

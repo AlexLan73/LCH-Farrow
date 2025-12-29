@@ -2,6 +2,7 @@
 #include <memory>
 #include "signal_buffer.h"
 #include "filter_bank.h"
+#include "lagrange_matrix.h"
 #include "gpu_backend/gpu_factory.h"
 #include "profiling_engine.h"
 #include "processing_pipeline.h"
@@ -27,6 +28,42 @@ int main(int argc, char* argv[]) {
     std::cout << "Backend: " << gpu_backend->GetBackendName() << "\n";
     std::cout << "Устройство: " << gpu_backend->GetDeviceName() << "\n";
     std::cout << "Память: " << (gpu_backend->GetDeviceMemorySize() / (1024 * 1024)) << " MB\n\n";
+    
+    // Загружаем матрицу Лагранжа
+    std::cout << "Загрузка матрицы Лагранжа...\n";
+    LagrangeMatrix lagrange_matrix;
+    // Пробуем несколько путей
+    std::vector<std::string> possible_paths = {
+        "Doc/Example/lagrange_matrix.json",
+        "../Doc/Example/lagrange_matrix.json",
+        "../../Doc/Example/lagrange_matrix.json",
+        "/home/alex/C++/LCH-Farrow/Doc/Example/lagrange_matrix.json"
+    };
+    
+    bool loaded = false;
+    for (const auto& path : possible_paths) {
+        if (lagrange_matrix.LoadFromJson(path)) {
+            std::cout << "Матрица загружена из: " << path << "\n";
+            loaded = true;
+            break;
+        }
+    }
+    
+    if (!loaded) {
+        std::cerr << "Ошибка: не удалось загрузить матрицу Лагранжа\n";
+        std::cerr << "Пробовались пути:\n";
+        for (const auto& path : possible_paths) {
+            std::cerr << "  - " << path << "\n";
+        }
+        return 1;
+    }
+    
+    // Загружаем матрицу на GPU
+    if (!gpu_backend->UploadLagrangeMatrix(lagrange_matrix.GetData())) {
+        std::cerr << "Ошибка: не удалось загрузить матрицу Лагранжа на GPU\n";
+        return 1;
+    }
+    std::cout << "Матрица Лагранжа загружена на GPU\n\n";
     
     // Создаём тестовые данные
     std::cout << "Создание тестовых данных...\n";
