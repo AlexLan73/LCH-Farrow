@@ -6,14 +6,55 @@
 #include "gpu_backend/gpu_factory.h"
 #include "profiling_engine.h"
 #include "processing_pipeline.h"
+#include "lfm_signal_generator.h"
+
 
 int main(int argc, char* argv[]) {
-    std::cout << "========================================\n";
-    std::cout << "LCH-Farrow OpenCL Benchmark\n";
-    std::cout << "========================================\n\n";
+  const float f_start = 100.0f;
+  const float f_stop = 500.0f;
+  const float sample_rate = 8000.0f;
+  const float duration = 1.0f;
+
+  // Создать генератор
+  LFMSignalGenerator lfm(f_start, f_stop, sample_rate, duration);
+
+  // Получить буфер данных
+  // size_t num_samples = 1024;  // Для теста используем небольшой размер
+
+  const size_t num_samples = static_cast<size_t>(duration * sample_rate);  // Для теста используем небольшой размер
+  const size_t num_beams = 4; // Для теста используем небольшое количество
+  
+  // Создаём компоненты
+  SignalBuffer signal_buffer(num_beams, num_samples);
+
+  std::vector<std::complex<float>*> beam_ptrs(num_beams);
+  for (size_t b = 0; b < num_beams; ++b) {
+      beam_ptrs[b] = signal_buffer.GetBeamData(b);
+  }
+
+  // Задержки для каждого луча (имитация DOA)
+  std::vector<float> delays(num_beams);
+  for (size_t b = 0; b < num_beams; ++b) {
+      delays[b] = b * 0.1f;  // 0, 0.1, 0.2, ... задержки в отсчётах
+  }
+
+  // Генерировать все лучи
+  lfm.GenerateAllBeams(beam_ptrs, num_samples, num_beams, delays);
+
+  printf("✅ ЛЧМ сигнал сгенерирован для %zu лучей\n", num_beams);
+  printf("   Частота: %.0f - %.0f Гц\n", f_start, f_stop);
+  printf("   Длительность: %.2f сек\n", duration);
+  printf("   Отсчётов: %zu\n", num_samples);
+
+  //--------------------------------------------------------------------
+
+
+  std::cout << "========================================\n";
+  std::cout << "LCH-Farrow OpenCL Benchmark\n";
+  std::cout << "========================================\n\n";
     
     // Создаём компоненты
-    SignalBuffer signal_buffer;
+//    SignalBuffer signal_buffer;
     FilterBank filter_bank;
     ProfilingEngine profiler;
     
@@ -67,19 +108,7 @@ int main(int argc, char* argv[]) {
     
     // Создаём тестовые данные
     std::cout << "Создание тестовых данных...\n";
-    size_t num_beams = 4;  // Для теста используем небольшое количество
-    size_t num_samples = 1024;  // Для теста используем небольшой размер
-    
-    signal_buffer.Resize(num_beams, num_samples);
-    
-    // Заполняем тестовыми данными
-    for (size_t beam = 0; beam < num_beams; ++beam) {
-        auto* beam_data = signal_buffer.GetBeamData(beam);
-        for (size_t sample = 0; sample < num_samples; ++sample) {
-            float phase = 2.0f * 3.14159f * static_cast<float>(sample) / static_cast<float>(num_samples);
-            beam_data[sample] = std::complex<float>(std::cos(phase), std::sin(phase));
-        }
-    }
+    // Данные уже сгенерированы через LFMSignalGenerator выше
     
     // Генерируем опорный ЛЧМ сигнал (опционально, не используется в упрощённом pipeline)
     // std::cout << "Генерация опорного ЛЧМ сигнала...\n";

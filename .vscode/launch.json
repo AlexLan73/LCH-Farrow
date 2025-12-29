@@ -2,7 +2,77 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C++ Debug: LCH-Farrow (Windows)",
+            "name": "Debug LCH-Farrow (Linux)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/LCH-Farrow",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "logging": {
+                "moduleLoad": false,
+                "trace": false,
+                "engineLogging": false,
+                "programOutput": true,
+                "exceptions": true
+            }
+        },
+        {
+            "name": "Debug LCH-Farrow (Linux, with --copy-to-host)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/LCH-Farrow",
+            "args": ["--copy-to-host"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Debug LCH-Farrow (Linux, Attach to Process)",
+            "type": "cppdbg",
+            "request": "attach",
+            "program": "${workspaceFolder}/build/LCH-Farrow",
+            "processId": "${command:pickProcess}",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Debug LCH-Farrow (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/LCH-Farrow.exe",
@@ -10,11 +80,11 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "preLaunchTask": "CMake: build (Debug)",
+            "preLaunchTask": "build",
             "environment": []
         },
         {
-            "name": "C++ Debug: LCH-Farrow (Windows - GDB)",
+            "name": "Debug LCH-Farrow (Windows - GDB)",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/LCH-Farrow.exe",
@@ -32,33 +102,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "CMake: build (Debug)"
-        },
-        {
-            "name": "C++ Debug: LCH-Farrow (Linux)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/LCH-Farrow",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Set Disassembly Flavor to Intel",
-                    "text": "-gdb-set disassembly-flavor intel",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "CMake: build (Debug)"
+            "preLaunchTask": "build"
         }
     ]
 }

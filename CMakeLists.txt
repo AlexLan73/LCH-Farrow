@@ -66,9 +66,7 @@ set(TYPE_GPU "" CACHE STRING "GPU Type (e.g., RTX 2080ti, V100, A100)")
 
 # ✅ Автоматически определить GPU по архитектуре
 if(TYPE_GPU STREQUAL "")
-    if(CUDA_ARCH MATCHES "52")
-        set(TYPE_GPU "GTX 960 / K40")
-    elseif(CUDA_ARCH MATCHES "75")
+    if(CUDA_ARCH MATCHES "75")
         set(TYPE_GPU "RTX 2080/2080ti")
     elseif(CUDA_ARCH MATCHES "80")
         set(TYPE_GPU "A100 / RTX 3090")
@@ -320,6 +318,7 @@ if(OPENCL_ENABLED)
         src/processing_pipeline.cpp
         src/profiling_engine.cpp
         src/lagrange_matrix.cpp
+        src/lfm_signal_generator.cpp
         src/gpu_backend/opencl_backend.cpp
         src/gpu_backend/gpu_factory.cpp
     )
@@ -329,6 +328,7 @@ if(OPENCL_ENABLED)
         include/processing_pipeline.h
         include/profiling_engine.h
         include/lagrange_matrix.h
+        include/lfm_signal_generator.h
         include/gpu_backend/igpu_backend.h
         include/gpu_backend/opencl_backend.h
         include/gpu_backend/gpu_factory.h

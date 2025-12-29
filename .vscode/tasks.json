@@ -2,74 +2,53 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "CMake: configure (Debug)",
+            "label": "build",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cmake --build ${workspaceFolder}/build --config Debug -j$(nproc)"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": false,
+                "clear": true
+            },
+            "problemMatcher": [
+                "$gcc",
+                "$msCompile"
+            ],
+            "detail": "Сборка проекта через CMake (кроссплатформенная)"
+        },
+        {
+            "label": "build (Linux)",
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--preset",
-                "${command:cmake.activePreset}",
-                "-DCMAKE_BUILD_TYPE=Debug"
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug",
+                "-j",
+                "$(nproc)"
             ],
-            "windows": {
-                "args": [
-                    "--preset",
-                    "windows-main",
-                    "-DCMAKE_BUILD_TYPE=Debug"
-                ]
-            },
-            "linux": {
-                "args": [
-                    "--preset",
-                    "linux-main",
-                    "-DCMAKE_BUILD_TYPE=Debug"
-                ]
-            },
-            "osx": {
-                "args": [
-                    "--preset",
-                    "linux-main",
-                    "-DCMAKE_BUILD_TYPE=Debug"
-                ]
-            },
             "group": "build",
             "presentation": {
                 "reveal": "always",
-                "panel": "new"
+                "panel": "dedicated"
             },
-            "problemMatcher": []
-        },
-        {
-            "label": "CMake: configure (Release)",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--preset",
-                "${command:cmake.activePreset}",
-                "-DCMAKE_BUILD_TYPE=Release"
+            "problemMatcher": [
+                "$gcc"
             ],
-            "windows": {
-                "args": [
-                    "--preset",
-                    "windows-main",
-                    "-DCMAKE_BUILD_TYPE=Release"
-                ]
-            },
-            "linux": {
-                "args": [
-                    "--preset",
-                    "linux-main",
-                    "-DCMAKE_BUILD_TYPE=Release"
-                ]
-            },
-            "group": "build",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            },
-            "problemMatcher": []
+            "detail": "Сборка для Linux"
         },
         {
-            "label": "CMake: build (Debug)",
+            "label": "build (Windows)",
             "type": "shell",
             "command": "cmake",
             "args": [
@@ -78,85 +57,67 @@
                 "--config",
                 "Debug"
             ],
-            "windows": {
-                "problemMatcher": "$msCompile"
-            },
-            "linux": {
-                "problemMatcher": "$gcc"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "dependsOn": "CMake: configure (Debug)",
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            }
-        },
-        {
-            "label": "CMake: build (Release)",
-            "type": "shell",
-            "command": "cmake",
-            "args": [
-                "--build",
-                "${workspaceFolder}/build",
-                "--config",
-                "Release"
-            ],
-            "windows": {
-                "problemMatcher": "$msCompile"
-            },
-            "linux": {
-                "problemMatcher": "$gcc"
-            },
             "group": "build",
-            "dependsOn": "CMake: configure (Release)",
             "presentation": {
                 "reveal": "always",
-                "panel": "new"
-            }
+                "panel": "dedicated"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "detail": "Сборка для Windows"
         },
         {
-            "label": "CMake: clean",
+            "label": "configure",
             "type": "shell",
             "command": "cmake",
             "args": [
-                "--build",
+                "-B",
                 "${workspaceFolder}/build",
-                "--target",
-                "clean"
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DENABLE_OPENCL=ON"
             ],
             "group": "build",
             "presentation": {
                 "reveal": "always",
-                "panel": "new"
+                "panel": "dedicated"
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "detail": "Конфигурация CMake"
         },
         {
-            "label": "CMake: rebuild (Debug)",
+            "label": "clean",
             "type": "shell",
-            "command": "bash",
-            "windows": {
-                "command": "cmd",
-                "args": [
-                    "/c",
-                    "rmdir /s /q build & cmake --preset windows-main -DCMAKE_BUILD_TYPE=Debug & cmake --build build --config Debug"
-                ]
-            },
-            "linux": {
-                "args": [
-                    "-c",
-                    "rm -rf build && cmake --preset linux-main -DCMAKE_BUILD_TYPE=Debug && cmake --build build"
-                ]
-            },
+            "command": "rm",
+            "args": [
+                "-rf",
+                "${workspaceFolder}/build"
+            ],
             "group": "build",
             "presentation": {
                 "reveal": "always",
-                "panel": "new"
+                "panel": "dedicated"
             },
-            "problemMatcher": []
+            "problemMatcher": [],
+            "detail": "Очистка директории build"
+        },
+        {
+            "label": "rebuild",
+            "dependsOn": [
+                "clean",
+                "configure",
+                "build"
+            ],
+            "dependsOrder": "sequence",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Полная пересборка проекта"
         }
     ]
 }
