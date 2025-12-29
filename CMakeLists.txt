@@ -9,8 +9,14 @@ project(LCH-Farrow VERSION 1.0.0 LANGUAGES CXX)
 # ============================================================================
 
 # Параметры для выбора GPU
-option(ENABLE_CUDA "Enable CUDA support" ON)
-option(ENABLE_OPENCL "Enable OpenCL support" OFF)
+# Для Ubuntu по умолчанию используем OpenCL
+if(UNIX AND NOT APPLE)
+    option(ENABLE_CUDA "Enable CUDA support" OFF)
+    option(ENABLE_OPENCL "Enable OpenCL support" ON)
+else()
+    option(ENABLE_CUDA "Enable CUDA support" ON)
+    option(ENABLE_OPENCL "Enable OpenCL support" OFF)
+endif()
 
 ################################################################################
 # GPU Type Detection
@@ -128,15 +134,21 @@ endif()
 
 # Попытка найти OpenCL
 if(ENABLE_OPENCL)
-    find_package(OpenCL QUIET)
+    find_package(OpenCL REQUIRED)
     if(OpenCL_FOUND)
         message(STATUS "✅ OpenCL НАЙДЕНА!")
         message(STATUS "   OpenCL Version: ${OpenCL_VERSION_STRING}")
         message(STATUS "   OpenCL Include: ${OpenCL_INCLUDE_DIRS}")
+        message(STATUS "   OpenCL Libraries: ${OpenCL_LIBRARIES}")
+        
+        # Проверка версии OpenCL (требуется >= 2.0)
+        if(OpenCL_VERSION_STRING VERSION_LESS "2.0")
+            message(WARNING "⚠️  OpenCL версия ${OpenCL_VERSION_STRING} < 2.0, могут быть проблемы")
+        endif()
+        
         set(OPENCL_ENABLED TRUE)
     else()
-        message(STATUS "⚠️  OpenCL НЕ НАЙДЕНА")
-        set(OPENCL_ENABLED FALSE)
+        message(FATAL_ERROR "❌ OpenCL НЕ НАЙДЕНА! Установите OpenCL SDK")
     endif()
 else()
     message(STATUS "⏭️  OpenCL отключена (ENABLE_OPENCL=OFF)")
@@ -278,10 +290,21 @@ endif()
 # Добавить OpenCL файлы если включена
 if(OPENCL_ENABLED)
     list(APPEND SOURCES
-        src/opencl_kernel.cpp
+        src/signal_buffer.cpp
+        src/filter_bank.cpp
+        src/processing_pipeline.cpp
+        src/profiling_engine.cpp
+        src/gpu_backend/opencl_backend.cpp
+        src/gpu_backend/gpu_factory.cpp
     )
     list(APPEND HEADERS
-        include/opencl_kernel.h
+        include/signal_buffer.h
+        include/filter_bank.h
+        include/processing_pipeline.h
+        include/profiling_engine.h
+        include/gpu_backend/igpu_backend.h
+        include/gpu_backend/opencl_backend.h
+        include/gpu_backend/gpu_factory.h
     )
     message(STATUS "✅ OpenCL источники добавлены")
 endif()
@@ -335,9 +358,20 @@ endif()
 # Линковка OpenCL
 if(OPENCL_ENABLED)
     target_link_libraries(${PROJECT_NAME} PRIVATE OpenCL::OpenCL)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCL_INCLUDE_DIRS})
+    target_include_directories(${PROJECT_NAME} PRIVATE 
+        ${CMAKE_SOURCE_DIR}/include
+        ${OpenCL_INCLUDE_DIRS}
+    )
     target_compile_definitions(${PROJECT_NAME} PRIVATE OPENCL_ENABLED=1)
+    
+    # Добавить директорию с kernel файлами
+    set(OPENCL_KERNEL_DIR "${CMAKE_SOURCE_DIR}/kernels")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE 
+        OPENCL_KERNEL_DIR="${OPENCL_KERNEL_DIR}"
+    )
+    
     message(STATUS "✅ OpenCL библиотеки добавлены в линковку")
+    message(STATUS "   OpenCL Kernel Dir: ${OPENCL_KERNEL_DIR}")
 endif()
 
 # ============================================================================
