@@ -81,9 +81,9 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    // Генерируем опорный ЛЧМ сигнал
-    std::cout << "Генерация опорного ЛЧМ сигнала...\n";
-    filter_bank.GenerateLFMReference(num_samples, 1.0f, 1.0f, 1.0f);
+    // Генерируем опорный ЛЧМ сигнал (опционально, не используется в упрощённом pipeline)
+    // std::cout << "Генерация опорного ЛЧМ сигнала...\n";
+    // filter_bank.GenerateLFMReference(num_samples, 1.0f, 1.0f, 1.0f);
     
     // Создаём pipeline
     std::cout << "Создание processing pipeline...\n";
@@ -96,7 +96,20 @@ int main(int argc, char* argv[]) {
     
     // Выполняем обработку
     std::cout << "\nВыполнение pipeline...\n";
-    if (!pipeline.ExecuteFull()) {
+    
+    // Опционально: копировать результат с GPU на хост для анализа
+    // true = скопировать на хост, false = оставить на GPU
+    bool copy_to_host = false;  // По умолчанию оставляем на GPU
+    
+    // Можно задать через аргументы командной строки
+    if (argc > 1 && std::string(argv[1]) == "--copy-to-host") {
+        copy_to_host = true;
+        std::cout << "Режим: копирование результата с GPU на хост для анализа\n";
+    } else {
+        std::cout << "Режим: результат остаётся на GPU для дальнейшей обработки\n";
+    }
+    
+    if (!pipeline.ExecuteFull(copy_to_host)) {
         std::cerr << "Ошибка при выполнении pipeline\n";
         return 1;
     }

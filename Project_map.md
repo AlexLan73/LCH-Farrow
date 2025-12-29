@@ -2,13 +2,13 @@
 
 ## 📋 ОБЗОР ПРОЕКТА
 
-**LCH-Farrow** - Multi-GPU FFT/IFFT Benchmark на OpenCL для Ubuntu с поддержкой NVIDIA и AMD GPU.
+**LCH-Farrow** - Multi-GPU Benchmark на OpenCL для Ubuntu с поддержкой NVIDIA и AMD GPU.
 
-**Основная задача**: Реализация дробной задержки сигнала с интерполяцией Лагранжа и FFT/IFFT свёртки с опорным ЛЧМ сигналом.
+**Основная задача**: Реализация дробной задержки сигнала с интерполяцией Лагранжа до формирования матрицы с задержанными сигналами. Поддержка опционального вывода результата с GPU для анализа.
 
 **Целевая платформа**: Ubuntu Linux, RTX 3060 (NVIDIA), поддержка AMD GPU
 
-**Технологии**: C++17, OpenCL 2.0+, clFFT, CMake 3.20+
+**Технологии**: C++17, OpenCL 2.0+, CMake 3.20+
 
 ---
 
@@ -52,7 +52,7 @@ LCH-Farrow/
 │
 ├── kernels/                    # OpenCL kernel файлы
 │   ├── kernel_fractional_delay.cl  # Kernel дробной задержки (Лагранж)
-│   └── kernel_hadamard.cl          # Kernel поэлементного умножения
+│   └── kernel_hadamard.cl          # Kernel поэлементного умножения (не используется в текущей версии)
 │
 ├── data/                       # Тестовые данные
 │   └── (тестовые файлы сигналов)
@@ -184,13 +184,13 @@ LCH-Farrow/
 - `ValidateResults(tolerance)` - валидация результатов
 
 **Pipeline этапы**:
-1. Предвычисление опорной FFT
-2. H2D Transfer (Host → Device)
-3. Дробная задержка (GPU Kernel)
-4. FFT Forward (clFFT)
-5. Hadamard Multiply (GPU Kernel)
-6. IFFT Inverse (clFFT)
-7. D2H Transfer (Device → Host)
+1. H2D Transfer (Host → Device) - загрузка данных на GPU
+2. Дробная задержка (GPU Kernel) - формирование матрицы с задержанными сигналами
+3. Опционально: D2H Transfer (Device → Host) - вывод с GPU для анализа
+
+**Режимы работы**:
+- `copy_to_host = false`: результат остаётся на GPU для дальнейшей обработки
+- `copy_to_host = true`: результат копируется на хост для анализа
 
 ---
 
@@ -223,9 +223,9 @@ LCH-Farrow/
 - `Initialize()` - инициализация
 - `AllocateDeviceMemory(size)` - выделение памяти
 - `ExecuteFractionalDelay(...)` - дробная задержка
-- `ExecuteFFT(...)` - FFT/IFFT
-- `ExecuteHadamardMultiply(...)` - поэлементное умножение
 - `UploadLagrangeMatrix(data)` - загрузка матрицы Лагранжа
+- `ExecuteFFT(...)` - FFT/IFFT (опционально, не используется в текущей версии)
+- `ExecuteHadamardMultiply(...)` - поэлементное умножение (опционально, не используется в текущей версии)
 
 ---
 
@@ -239,11 +239,10 @@ LCH-Farrow/
 - `cl::CommandQueue` - очередь команд
 - `cl::Program`, `cl::Kernel` - скомпилированные kernel'ы
 - `cl::Buffer` - буферы на GPU
-- `clfftPlanHandle` - планы FFT (если clFFT доступна)
 
 **Kernels**:
-- `kernel_fractional_delay_` - дробная задержка
-- `kernel_hadamard_` - поэлементное умножение
+- `kernel_fractional_delay_` - дробная задержка (используется)
+- `kernel_hadamard_` - поэлементное умножение (не используется в текущей версии)
 
 **Буферы**:
 - `lagrange_matrix_buffer_` - матрица Лагранжа на GPU
@@ -294,15 +293,9 @@ LCH-Farrow/
 
 **Назначение**: Поэлементное умножение (Hadamard product) для свёртки в частотной области
 
-**Параметры**:
-- `beams` - буфер лучей (in-place)
-- `reference_fft` - опорная FFT
-- `num_beams`, `num_samples` - размеры
+**Статус**: Не используется в текущей версии (отложено до будущих этапов)
 
-**Алгоритм**:
-1. Определение луча и отсчёта
-2. Умножение комплексных чисел: `beam[i] *= reference_fft[i]`
-3. Запись результата in-place
+**Примечание**: Kernel сохранён для будущего использования при добавлении FFT/IFFT свёртки
 
 ---
 
@@ -352,7 +345,7 @@ LCH-Farrow/
 
 ## 🔄 ПРОЦЕСС ОБРАБОТКИ
 
-### Полный pipeline:
+### Упрощённый pipeline (до формирования матрицы с задержанными сигналами):
 
 ```
 1. Инициализация
@@ -361,20 +354,16 @@ LCH-Farrow/
    └─ Загрузка матрицы на GPU
 
 2. Подготовка данных
-   ├─ Загрузка сигналов (SignalBuffer)
-   ├─ Генерация опорного ЛЧМ (FilterBank)
-   └─ Предвычисление опорной FFT
+   └─ Загрузка сигналов (SignalBuffer)
 
 3. GPU обработка
-   ├─ H2D Transfer
+   ├─ H2D Transfer (загрузка данных на GPU)
    ├─ Дробная задержка (kernel_fractional_delay.cl)
-   ├─ FFT Forward (clFFT)
-   ├─ Hadamard Multiply (kernel_hadamard.cl)
-   ├─ IFFT Inverse (clFFT)
-   └─ D2H Transfer
+   │  └─ Формирование матрицы с задержанными сигналами
+   └─ Опционально: D2H Transfer (вывод с GPU для анализа)
 
 4. Результаты
-   ├─ Сохранение обработанных сигналов
+   ├─ Матрица с задержанными сигналами на GPU (или на хосте)
    ├─ Генерация отчёта профилирования
    └─ Сохранение JSON отчёта
 ```

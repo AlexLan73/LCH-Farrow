@@ -13,38 +13,25 @@ ProcessingPipeline::ProcessingPipeline(
       gpu_backend_(gpu_backend),
       profiler_(profiler),
       device_buffer_(nullptr),
-      device_reference_fft_(nullptr),
-      device_buffer_size_(0),
-      device_reference_fft_size_(0) {
+      device_buffer_size_(0) {
 }
 
 ProcessingPipeline::~ProcessingPipeline() {
     FreeDeviceMemory();
 }
 
-bool ProcessingPipeline::ExecuteFull() {
-    if (!signal_buffer_ || !filter_bank_ || !gpu_backend_ || !profiler_) {
+bool ProcessingPipeline::ExecuteFull(bool copy_to_host) {
+    if (!signal_buffer_ || !gpu_backend_ || !profiler_) {
         std::cerr << "Ошибка: не все компоненты инициализированы" << std::endl;
         return false;
     }
     
-    // 1. Предвычислить опорную FFT (если ещё не вычислена)
-    if (!filter_bank_->IsReferenceFftComputed()) {
-        profiler_->StartTimer("PrecomputeReferenceFft");
-        filter_bank_->PrecomputeReferenceFft();
-        profiler_->StopTimer("PrecomputeReferenceFft");
-    }
-    
-    // 2. Загрузить матрицу Лагранжа на GPU (если ещё не загружена)
-    // Это делается через FilterBank или отдельно
-    // TODO: Добавить загрузку матрицы Лагранжа
-    
-    // 2. Выделить память на GPU
+    // 1. Выделить память на GPU
     if (!AllocateDeviceMemory()) {
         return false;
     }
     
-    // 3. H2D Transfer
+    // 2. H2D Transfer (загрузка данных на GPU)
     profiler_->StartTimer("H2D_Transfer");
     if (!CopyHostToDevice()) {
         profiler_->StopTimer("H2D_Transfer");
@@ -52,7 +39,7 @@ bool ProcessingPipeline::ExecuteFull() {
     }
     profiler_->StopTimer("H2D_Transfer");
     
-    // 4. Дробная задержка
+    // 3. Дробная задержка (формирование матрицы с задержанными сигналами)
     profiler_->StartTimer("FractionalDelay");
     // TODO: Получить коэффициенты задержки (пока используем нули)
     std::vector<float> delay_coeffs(signal_buffer_->GetNumBeams(), 0.0f);
@@ -66,49 +53,18 @@ bool ProcessingPipeline::ExecuteFull() {
     }
     profiler_->StopTimer("FractionalDelay");
     
-    // 5. FFT Forward
-    profiler_->StartTimer("FFT_Forward");
-    if (!gpu_backend_->ExecuteFFT(
-            device_buffer_,
-            signal_buffer_->GetNumBeams(),
-            signal_buffer_->GetNumSamples(),
-            true)) {
-        profiler_->StopTimer("FFT_Forward");
-        return false;
-    }
-    profiler_->StopTimer("FFT_Forward");
-    
-    // 6. Hadamard Multiply
-    profiler_->StartTimer("HadamardMultiply");
-    if (!gpu_backend_->ExecuteHadamardMultiply(
-            device_buffer_,
-            device_reference_fft_,
-            signal_buffer_->GetNumBeams(),
-            signal_buffer_->GetNumSamples())) {
-        profiler_->StopTimer("HadamardMultiply");
-        return false;
-    }
-    profiler_->StopTimer("HadamardMultiply");
-    
-    // 7. IFFT Inverse
-    profiler_->StartTimer("IFFT_Inverse");
-    if (!gpu_backend_->ExecuteFFT(
-            device_buffer_,
-            signal_buffer_->GetNumBeams(),
-            signal_buffer_->GetNumSamples(),
-            false)) {
-        profiler_->StopTimer("IFFT_Inverse");
-        return false;
-    }
-    profiler_->StopTimer("IFFT_Inverse");
-    
-    // 8. D2H Transfer
-    profiler_->StartTimer("D2H_Transfer");
-    if (!CopyDeviceToHost()) {
+    // 4. Опционально: D2H Transfer (вывод с GPU для анализа)
+    if (copy_to_host) {
+        profiler_->StartTimer("D2H_Transfer");
+        if (!CopyDeviceToHost()) {
+            profiler_->StopTimer("D2H_Transfer");
+            return false;
+        }
         profiler_->StopTimer("D2H_Transfer");
-        return false;
+        std::cout << "✅ Данные скопированы с GPU на хост для анализа" << std::endl;
+    } else {
+        std::cout << "✅ Матрица с задержанными сигналами осталась на GPU для дальнейшей обработки" << std::endl;
     }
-    profiler_->StopTimer("D2H_Transfer");
     
     return true;
 }
@@ -145,24 +101,6 @@ bool ProcessingPipeline::AllocateDeviceMemory() {
         return false;
     }
     
-    // Выделяем память для опорной FFT
-    device_reference_fft_size_ = num_samples * sizeof(FilterBank::ComplexType);
-    device_reference_fft_ = gpu_backend_->AllocateDeviceMemory(device_reference_fft_size_);
-    if (device_reference_fft_ == nullptr) {
-        std::cerr << "Ошибка: не удалось выделить память для опорной FFT" << std::endl;
-        FreeDeviceMemory();
-        return false;
-    }
-    
-    // Копируем опорную FFT на устройство
-    const FilterBank::ComplexType* ref_fft = filter_bank_->GetReferenceFft();
-    if (ref_fft != nullptr) {
-        if (!gpu_backend_->CopyHostToDevice(device_reference_fft_, ref_fft, device_reference_fft_size_)) {
-            std::cerr << "Ошибка: не удалось скопировать опорную FFT на устройство" << std::endl;
-            return false;
-        }
-    }
-    
     return true;
 }
 
@@ -172,13 +110,7 @@ void ProcessingPipeline::FreeDeviceMemory() {
         device_buffer_ = nullptr;
     }
     
-    if (device_reference_fft_ != nullptr) {
-        gpu_backend_->FreeDeviceMemory(device_reference_fft_);
-        device_reference_fft_ = nullptr;
-    }
-    
     device_buffer_size_ = 0;
-    device_reference_fft_size_ = 0;
 }
 
 bool ProcessingPipeline::CopyHostToDevice() {

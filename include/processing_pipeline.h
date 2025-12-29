@@ -8,20 +8,19 @@
 #include <memory>
 
 /**
- * @brief Класс для координации полного pipeline обработки сигнала
+ * @brief Класс для координации pipeline обработки сигнала
  * 
- * Управляет всеми этапами обработки:
- * 1. Дробная задержка
- * 2. FFT Forward
- * 3. Hadamard Multiply
- * 4. IFFT Inverse
+ * Управляет этапами обработки до формирования матрицы с задержанными сигналами:
+ * 1. H2D Transfer (загрузка данных на GPU)
+ * 2. Дробная задержка (формирование матрицы с задержанными сигналами)
+ * 3. Опционально: D2H Transfer (вывод с GPU для анализа)
  */
 class ProcessingPipeline {
 public:
     /**
      * @brief Конструктор
      * @param signal_buffer Указатель на буфер сигналов
-     * @param filter_bank Указатель на банк фильтров
+     * @param filter_bank Указатель на банк фильтров (может быть nullptr)
      * @param gpu_backend Указатель на GPU backend
      * @param profiler Указатель на профилировщик
      */
@@ -38,10 +37,11 @@ public:
     ~ProcessingPipeline();
     
     /**
-     * @brief Выполнить полный pipeline обработки
+     * @brief Выполнить pipeline обработки до формирования матрицы с задержанными сигналами
+     * @param copy_to_host Опционально скопировать результат с GPU на хост для анализа
      * @return true если успешно
      */
-    bool ExecuteFull();
+    bool ExecuteFull(bool copy_to_host = false);
     
     /**
      * @brief Выполнить пошагово (для отладки)
@@ -70,9 +70,7 @@ private:
     
     // GPU буферы
     void* device_buffer_;
-    void* device_reference_fft_;
     size_t device_buffer_size_;
-    size_t device_reference_fft_size_;
     
     /**
      * @brief Выделить память на GPU
