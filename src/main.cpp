@@ -1,5 +1,5 @@
 #include <iostream>
-#include "mylib.h"
+#include <mylib.h>
 
 int main() {
     std::cout << "Hello from CMake!\n";
