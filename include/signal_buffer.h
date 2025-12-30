@@ -92,8 +92,9 @@ public:
      */
     bool IsValid() const;
 
-private:
     std::vector<BeamType> beams_;  // [beam_id][sample_id]
+
+private:
     size_t num_beams_;
     size_t num_samples_;
     

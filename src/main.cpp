@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <cstring>
 #include "signal_buffer.h"
 #include "filter_bank.h"
 #include "lagrange_matrix.h"
@@ -7,6 +8,50 @@
 #include "profiling_engine.h"
 #include "processing_pipeline.h"
 #include "lfm_signal_generator.h"
+#include <iomanip>
+
+using namespace radar;  
+
+radar::SignalBufferNew example_basic_usage() {
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "EXAMPLE 1: Basic Usage\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    // Create parameters with validation (C++17 compatible)
+    radar::LFMParameters params;
+    params.f_start = 100.0f;
+    params.f_stop = 500.0f;
+    params.sample_rate = 8000.0f;
+    params.duration = 1.0f;
+    params.num_beams = 4;
+    params.steering_angle = 30.0f;
+    
+    std::cout << params << "\n\n";
+    
+    // Create generator
+    radar::LFMSignalGenerator generator(params);
+    
+    // Generate signal (BASIC variant)
+    radar::SignalBufferNew buffer = generator.Generate(radar::LFMVariant::BASIC);
+    
+    // Get statistics
+    const auto& stats = generator.GetStatistics();
+    std::cout << "\n" << stats << "\n";
+    
+    // Print sample data
+    std::cout << "\nFirst 10 samples of beam 0:\n";
+    auto* beam_0 = buffer.GetBeamData(0);
+    for (size_t i = 0; i < 10; ++i) {
+        std::cout << std::setw(3) << i << ": ("
+                  << std::setprecision(4) << beam_0[i].real() << ", "
+                  << beam_0[i].imag() << ")\n";
+    }
+    
+    std::cout << "\n✅ Success! Memory allocated: " 
+              << buffer.MemorySizeBytes() / (1024.0 * 1024.0) << " MB\n";
+    
+    return buffer;
+}
 
 
 int main(int argc, char* argv[]) {
@@ -16,30 +61,38 @@ int main(int argc, char* argv[]) {
   const float duration = 1.0f;
 
   // Создать генератор
-  LFMSignalGenerator lfm(f_start, f_stop, sample_rate, duration);
+  auto buf_ = example_basic_usage(); 
+//  LFMSignalGenerator lfm(f_start, f_stop, sample_rate, duration);
 
   // Получить буфер данных
   // size_t num_samples = 1024;  // Для теста используем небольшой размер
 
-  const size_t num_samples = static_cast<size_t>(duration * sample_rate);  // Для теста используем небольшой размер
+  const size_t num_samples = static_cast<size_t>(duration * sample_rate);
   const size_t num_beams = 4; // Для теста используем небольшое количество
   
-  // Создаём компоненты
+  // Создаём компоненты - используем старый SignalBuffer для совместимости с ProcessingPipeline
   SignalBuffer signal_buffer(num_beams, num_samples);
+  signal_buffer.beams_ = buf_.
 
-  std::vector<std::complex<float>*> beam_ptrs(num_beams);
-  for (size_t b = 0; b < num_beams; ++b) {
-      beam_ptrs[b] = signal_buffer.GetBeamData(b);
+  // Генерируем ЛЧМ сигнал через новый генератор
+  radar::LFMParameters lfm_params;
+  lfm_params.f_start = f_start;
+  lfm_params.f_stop = f_stop;
+  lfm_params.sample_rate = sample_rate;
+  lfm_params.duration = duration;
+  lfm_params.num_beams = num_beams;
+  lfm_params.steering_angle = 30.0f;
+  
+  radar::LFMSignalGenerator lfm_generator(lfm_params);
+  
+  // Копируем данные из нового буфера в старый для совместимости
+  radar::SignalBufferNew lfm_buffer = lfm_generator.Generate(radar::LFMVariant::DELAY);
+  
+  for (size_t beam = 0; beam < num_beams; ++beam) {
+      auto* old_beam = signal_buffer.GetBeamData(beam);
+      const auto* new_beam = lfm_buffer.GetBeamData(beam);
+      std::memcpy(old_beam, new_beam, num_samples * sizeof(std::complex<float>));
   }
-
-  // Задержки для каждого луча (имитация DOA)
-  std::vector<float> delays(num_beams);
-  for (size_t b = 0; b < num_beams; ++b) {
-      delays[b] = b * 0.1f;  // 0, 0.1, 0.2, ... задержки в отсчётах
-  }
-
-  // Генерировать все лучи
-  lfm.GenerateAllBeams(beam_ptrs, num_samples, num_beams, delays);
 
   printf("✅ ЛЧМ сигнал сгенерирован для %zu лучей\n", num_beams);
   printf("   Частота: %.0f - %.0f Гц\n", f_start, f_stop);
