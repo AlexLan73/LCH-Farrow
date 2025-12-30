@@ -82,12 +82,13 @@ struct GenerationStatistics {
 
 class SignalBufferNew {
 private:
-    std::vector<std::complex<float>> data_;
     size_t num_beams_;
     size_t num_samples_;
     bool is_allocated_;
     
 public:
+    std::vector<std::complex<float>> data_;
+
     // CONSTRUCTOR
     explicit SignalBufferNew(size_t num_beams, size_t num_samples)
         : num_beams_(num_beams), num_samples_(num_samples), is_allocated_(false) {
