@@ -6,7 +6,7 @@
 
 OpenCLBackend::OpenCLBackend()
     : device_memory_size_(0), initialized_(false)
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
     , fft_plan_forward_(0), fft_plan_inverse_(0), fft_plans_created_(false)
 #endif
     , lagrange_matrix_uploaded_(false)
@@ -39,7 +39,7 @@ bool OpenCLBackend::Initialize() {
         }
         
         // Инициализируем clFFT
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
         cl_int clfft_err = clfftSetup(nullptr);
         if (clfft_err != CLFFT_SUCCESS) {
             std::cerr << "Ошибка инициализации clFFT: " << clfft_err << std::endl;
@@ -81,7 +81,7 @@ void OpenCLBackend::Cleanup() {
         lagrange_matrix_uploaded_ = false;
     }
     
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
     // Завершаем работу clFFT
     clfftTeardown();
 #endif
@@ -259,7 +259,7 @@ bool OpenCLBackend::ExecuteFFT(
     size_t num_samples,
     bool forward) {
     
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
     if (!initialized_ || device_buffer == nullptr) {
         return false;
     }
@@ -517,7 +517,7 @@ bool OpenCLBackend::CheckError(cl_int err, const std::string& context) const {
 }
 
 bool OpenCLBackend::CreateFFTPlans(size_t num_samples, size_t num_beams) {
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
     if (fft_plans_created_) {
         return true;  // Планы уже созданы
     }
@@ -583,7 +583,7 @@ bool OpenCLBackend::CreateFFTPlans(size_t num_samples, size_t num_beams) {
 }
 
 void OpenCLBackend::DestroyFFTPlans() {
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
     if (fft_plans_created_) {
         if (fft_plan_forward_ != 0) {
             clfftDestroyPlan(&fft_plan_forward_);

@@ -4,7 +4,7 @@
 #include "igpu_backend.h"
 #define CL_HPP_ENABLE_EXCEPTIONS
 #include <CL/opencl.hpp>
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
 #include <clFFT.h>
 #endif
 #include <string>
@@ -70,7 +70,7 @@ private:
     cl::Kernel kernel_hadamard_;
     
     // clFFT plans
-#ifdef CLFFT_FOUND
+#if CLFFT_FOUND
     clfftPlanHandle fft_plan_forward_;
     clfftPlanHandle fft_plan_inverse_;
     bool fft_plans_created_;
