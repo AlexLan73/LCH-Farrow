@@ -4,10 +4,12 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "bash",
+            "command": "cmake",
             "args": [
-                "-c",
-                "cmake --build ${workspaceFolder}/build --config Debug -j$(nproc)"
+                "--build",
+                "${workspaceFolder}/build",
+                "--config",
+                "Debug"
             ],
             "group": {
                 "kind": "build",

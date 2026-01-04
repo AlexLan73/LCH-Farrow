@@ -1,14 +1,34 @@
 # 🗺️ PROJECT MAP - LCH-Farrow OpenCL Benchmark
 
+## 🤖 AI АССИСТЕНТ
+
+**Имя**: Кодо (Codo)
+**Роль**: Code assistant and helper
+**Помощники**: 5 синьоров (мастера/помощники)
+**MCP-server**: sequential-thinking
+**Конфигурация**: [`CLAUDE.md`](CLAUDE.md)
+
+**Правила работы**:
+- Всегда проверять [`MemoryBank`](MemoryBank/) перед началом работы
+- Использовать sequential-thinking-mcp для сложных проблем
+- Задавать уточняющие вопросы при неясностях
+- Обновлять память сессий после важных разговоров
+- Использовать 5 помощников (синьоров) при необходимости
+
+---
+
 ## 📋 ОБЗОР ПРОЕКТА
 
 **LCH-Farrow** - Multi-GPU Benchmark на OpenCL для Ubuntu с поддержкой NVIDIA и AMD GPU.
 
 **Основная задача**: Реализация дробной задержки сигнала с интерполяцией Лагранжа до формирования матрицы с задержанными сигналами. Поддержка опционального вывода результата с GPU для анализа.
 
-**Целевая платформа**: Ubuntu Linux, RTX 3060 (NVIDIA), поддержка AMD GPU
+**Целевая платформа 1**: Windows, RTX 2080ti (NVIDIA), поддержка AMD GPU
+**Целевая платформа 2**: Ubuntu Linux, RTX 3060 (NVIDIA), поддержка AMD GPU
 
 **Технологии**: C++17, OpenCL 2.0+, CMake 3.20+
+
+- сборка регулируется файлом CMakePresets.json
 
 ---
 
@@ -122,7 +142,7 @@ LCH-Farrow/
 ## 📦 КЛАССЫ И КОМПОНЕНТЫ
 
 ### 1. SignalBuffer
-**Файлы**: `include/signal_buffer.h`, `src/signal_buffer.cpp`
+**Файлы**: [`include/signal_buffer.h`](include/signal_buffer.h), [`src/signal_buffer.cpp`](src/signal_buffer.cpp)
 
 **Назначение**: Управление сигнальными данными (лучами)
 
@@ -140,7 +160,7 @@ LCH-Farrow/
 ---
 
 ### 2. FilterBank
-**Файлы**: `include/filter_bank.h`, `src/filter_bank.cpp`
+**Файлы**: [`include/filter_bank.h`](include/filter_bank.h), [`src/filter_bank.cpp`](src/filter_bank.cpp)
 
 **Назначение**: Управление FIR коэффициентами и опорным ЛЧМ сигналом
 
@@ -158,7 +178,7 @@ LCH-Farrow/
 ---
 
 ### 3. LagrangeMatrix
-**Файлы**: `include/lagrange_matrix.h`, `src/lagrange_matrix.cpp`
+**Файлы**: [`include/lagrange_matrix.h`](include/lagrange_matrix.h), [`src/lagrange_matrix.cpp`](src/lagrange_matrix.cpp)
 
 **Назначение**: Работа с матрицей коэффициентов Лагранжа для дробной задержки
 
@@ -174,7 +194,7 @@ LCH-Farrow/
 ---
 
 ### 4. ProcessingPipeline
-**Файлы**: `include/processing_pipeline.h`, `src/processing_pipeline.cpp`
+**Файлы**: [`include/processing_pipeline.h`](include/processing_pipeline.h), [`src/processing_pipeline.cpp`](src/processing_pipeline.cpp)
 
 **Назначение**: Координация полного pipeline обработки сигнала
 
@@ -195,7 +215,7 @@ LCH-Farrow/
 ---
 
 ### 5. ProfilingEngine
-**Файлы**: `include/profiling_engine.h`, `src/profiling_engine.cpp`
+**Файлы**: [`include/profiling_engine.h`](include/profiling_engine.h), [`src/profiling_engine.cpp`](src/profiling_engine.cpp)
 
 **Назначение**: Профилирование производительности всех этапов
 
@@ -215,7 +235,7 @@ LCH-Farrow/
 ---
 
 ### 6. IGPUBackend (Интерфейс)
-**Файлы**: `include/gpu_backend/igpu_backend.h`
+**Файлы**: [`include/gpu_backend/igpu_backend.h`](include/gpu_backend/igpu_backend.h)
 
 **Назначение**: Абстрактный интерфейс для GPU backend
 
@@ -230,7 +250,7 @@ LCH-Farrow/
 ---
 
 ### 7. OpenCLBackend
-**Файлы**: `include/gpu_backend/opencl_backend.h`, `src/gpu_backend/opencl_backend.cpp`
+**Файлы**: [`include/gpu_backend/opencl_backend.h`](include/gpu_backend/opencl_backend.h), [`src/gpu_backend/opencl_backend.cpp`](src/gpu_backend/opencl_backend.cpp)
 
 **Назначение**: Реализация GPU backend через OpenCL
 
@@ -250,7 +270,7 @@ LCH-Farrow/
 ---
 
 ### 8. GPUFactory
-**Файлы**: `include/gpu_backend/gpu_factory.h`, `src/gpu_backend/gpu_factory.cpp`
+**Файлы**: [`include/gpu_backend/gpu_factory.h`](include/gpu_backend/gpu_factory.h), [`src/gpu_backend/gpu_factory.cpp`](src/gpu_backend/gpu_factory.cpp)
 
 **Назначение**: Фабрика для создания GPU backend
 
@@ -269,7 +289,7 @@ LCH-Farrow/
 ## 🔧 OPENCL KERNELS
 
 ### kernel_fractional_delay.cl
-**Файл**: `kernels/kernel_fractional_delay.cl`
+**Файл**: [`kernels/kernel_fractional_delay.cl`](kernels/kernel_fractional_delay.cl)
 
 **Назначение**: Дробная задержка сигнала с интерполяцией Лагранжа 5-го порядка
 
@@ -289,7 +309,7 @@ LCH-Farrow/
 ---
 
 ### kernel_hadamard.cl
-**Файл**: `kernels/kernel_hadamard.cl`
+**Файл**: [`kernels/kernel_hadamard.cl`](kernels/kernel_hadamard.cl)
 
 **Назначение**: Поэлементное умножение (Hadamard product) для свёртки в частотной области
 
@@ -426,20 +446,20 @@ LCH-Farrow/
 ### Ключевые файлы для отладки:
 
 1. **Дробная задержка**:
-   - `src/processing_pipeline.cpp:54` - точка входа
-   - `src/gpu_backend/opencl_backend.cpp:159` - реализация
-   - `kernels/kernel_fractional_delay.cl:29` - GPU kernel
+   - [`src/processing_pipeline.cpp:54`](src/processing_pipeline.cpp:54) - точка входа
+   - [`src/gpu_backend/opencl_backend.cpp:159`](src/gpu_backend/opencl_backend.cpp:159) - реализация
+   - [`kernels/kernel_fractional_delay.cl:29`](kernels/kernel_fractional_delay.cl:29) - GPU kernel
 
 2. **FFT**:
-   - `src/gpu_backend/opencl_backend.cpp:250` - ExecuteFFT
+   - [`src/gpu_backend/opencl_backend.cpp:250`](src/gpu_backend/opencl_backend.cpp:250) - ExecuteFFT
    - clFFT библиотека
 
 3. **Профилирование**:
-   - `src/profiling_engine.cpp` - все методы профилирования
+   - [`src/profiling_engine.cpp`](src/profiling_engine.cpp) - все методы профилирования
 
 ### Документация по отладке:
-- `Doc/DEBUG_FRACTIONAL_DELAY.md` - детальный маршрут отладки
-- `Doc/FRACTIONAL_DELAY_ROUTE.md` - краткая справка
+- [`Doc/DEBUG_FRACTIONAL_DELAY.md`](Doc/DEBUG_FRACTIONAL_DELAY.md) - детальный маршрут отладки
+- [`Doc/FRACTIONAL_DELAY_ROUTE.md`](Doc/FRACTIONAL_DELAY_ROUTE.md) - краткая справка
 
 ---
 
@@ -451,8 +471,15 @@ LCH-Farrow/
 - CMake 3.20+
 - OpenCL SDK (NVIDIA или AMD)
 - clFFT библиотека (опционально)
-
 ### Сборка:
+
+**Используя CMakePresets.json** (рекомендуемый способ):
+```bash
+cmake --preset ubuntu
+cmake --build --preset ubuntu
+```
+
+**Или вручную**:
 ```bash
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENCL=ON
@@ -483,13 +510,13 @@ cmake --build . -j$(nproc)
 ## 🎓 ОБУЧАЮЩИЕ МАТЕРИАЛЫ
 
 ### Документация:
-- `Doc/Plan/00_ОБЩИЙ_ПЛАН.md` - общий план проекта
-- `Doc/Plan/01_ДЕТАЛЬНЫЙ_ПЛАН.md` - детальный план
-- `Doc/Example/` - примеры и эталоны
+- [`Doc/Plan/00_ОБЩИЙ_ПЛАН.md`](Doc/Plan/00_ОБЩИЙ_ПЛАН.md) - общий план проекта
+- [`Doc/Plan/01_ДЕТАЛЬНЫЙ_ПЛАН.md`](Doc/Plan/01_ДЕТАЛЬНЫЙ_ПЛАН.md) - детальный план
+- [`Doc/Example/`](Doc/Example/) - примеры и эталоны
 
 ### Примеры кода:
-- `Doc/Example/opencl_fractional_delay_256beams.cpp` - эталонная реализация
-- `kernels/kernel_fractional_delay.cl` - рабочий kernel
+- [`Doc/Example/opencl_fractional_delay_256beams.cpp`](Doc/Example/opencl_fractional_delay_256beams.cpp) - эталонная реализация
+- [`kernels/kernel_fractional_delay.cl`](kernels/kernel_fractional_delay.cl) - рабочий kernel
 
 ---
 
@@ -512,6 +539,20 @@ cmake --build . -j$(nproc)
 
 ---
 
-*Обновлено: 2025-01-28*  
-*Версия: 1.0*
+## 📚 ПАМЯТЬ ПРОЕКТА
+
+### MemoryBank
+- [`MemoryBank/key_findings.md`](MemoryBank/key_findings.md) - Ключевые результаты исследований
+- [`MemoryBank/AI_SESSION_MEMORY.md`](MemoryBank/AI_SESSION_MEMORY.md) - Память AI сессий
+
+**Правила использования**:
+- Всегда проверять MemoryBank перед началом работы
+- Обновлять память сессий после важных разговоров
+- Использовать sequential-thinking-mcp для сложных проблем
+
+---
+
+*Обновлено: 2025-01-28*
+*Версия: 1.1*
+*AI Assistant: Кодо (Codo)*
 

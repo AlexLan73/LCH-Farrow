@@ -1,6 +1,6 @@
 #include "gpu_backend/gpu_factory.h"
 #include "gpu_backend/opencl_backend.h"
-#include <CL/opencl.hpp>
+#include <CL/cl.hpp>
 #include <iostream>
 
 std::unique_ptr<IGPUBackend> GPUFactory::CreateBackend() {

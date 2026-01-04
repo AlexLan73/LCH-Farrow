@@ -1,0 +1,21 @@
+{
+  "metrics": [
+    {
+      "name": "FractionalDelay",
+      "time_ms": 35475.991000,
+      "call_count": 1,
+      "min_time_ms": 35475.991000,
+      "max_time_ms": 35475.991000,
+      "avg_time_ms": 35475.991000
+    },
+    {
+      "name": "H2D_Transfer",
+      "time_ms": 231802.879000,
+      "call_count": 1,
+      "min_time_ms": 231802.879000,
+      "max_time_ms": 231802.879000,
+      "avg_time_ms": 231802.879000
+    }
+  ],
+  "total_time_ms": 267278.870000
+}

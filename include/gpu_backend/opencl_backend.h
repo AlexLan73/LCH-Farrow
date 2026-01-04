@@ -3,7 +3,15 @@
 
 #include "igpu_backend.h"
 #define CL_HPP_ENABLE_EXCEPTIONS
-#include <CL/opencl.hpp>
+#include <CL/cl.hpp>
+
+// Для совместимости с разными системами
+#ifndef CL_HPP_TARGET_OPENCL_VERSION
+#define CL_HPP_TARGET_OPENCL_VERSION 200
+#endif
+#ifndef CL_HPP_MINIMUM_OPENCL_VERSION
+#define CL_HPP_MINIMUM_OPENCL_VERSION 120
+#endif
 #if CLFFT_FOUND
 #include <clFFT.h>
 #endif
