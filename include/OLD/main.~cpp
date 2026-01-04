@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
   
   // Создаём компоненты - используем старый SignalBuffer для совместимости с ProcessingPipeline
   SignalBuffer signal_buffer(num_beams, num_samples);
-  //signal_buffer.beams_ = buf_.data_;
+  signal_buffer.beams_ = buf_.data_;
 
   // Генерируем ЛЧМ сигнал через новый генератор
   radar::LFMParameters lfm_params;
