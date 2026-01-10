@@ -303,6 +303,12 @@ message(STATUS "")
 set(SOURCES
     src/main.cpp
     src/mylib.cpp
+    # OOP refactor sources
+    src/application.cpp
+    src/signal_generator.cpp
+    src/gpu_processor.cpp
+    src/validator.cpp
+    src/reporter.cpp
 )
 
 set(HEADERS
@@ -380,8 +386,29 @@ endif()
 target_include_directories(${PROJECT_NAME} 
     PRIVATE 
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
 )
 
+# Если в проекте добавлены локальные копии clFFT/OpenCL headers, подключим их
+if(EXISTS "${CMAKE_SOURCE_DIR}/clFFT/include")
+    message(STATUS "✅ Local clFFT include found: ${CMAKE_SOURCE_DIR}/clFFT/include")
+    target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/clFFT/include")
+endif()
+
+# Поддержка локальной библиотеки clFFT (в Windows ожидаем clFFT/lib/x64/clFFT.lib)
+if(EXISTS "${CMAKE_SOURCE_DIR}/clFFT/lib/x64")
+    if(MSVC)
+        set(_clfft_lib "${CMAKE_SOURCE_DIR}/clFFT/lib/x64/clFFT.lib")
+    else()
+        set(_clfft_lib "${CMAKE_SOURCE_DIR}/clFFT/lib/x64/libclFFT.a")
+    endif()
+    if(EXISTS "${_clfft_lib}")
+        message(STATUS "✅ Local clFFT library found: ${_clfft_lib}")
+        target_link_libraries(${PROJECT_NAME} PRIVATE "${_clfft_lib}")
+    else()
+        message(WARNING "Local clFFT lib directory exists but expected archive not found: ${_clfft_lib}")
+    endif()
+endif()
 # ============================================================================
 # ЧАСТЬ 7: ЛИНКОВКА И ЗАВИСИМОСТИ
 # ============================================================================

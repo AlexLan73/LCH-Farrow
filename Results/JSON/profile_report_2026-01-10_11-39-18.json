@@ -1,0 +1,41 @@
+{
+  "system_info": {
+    "device_name": "NVIDIA GeForce RTX 2080 Ti",
+    "device_vendor": "NVIDIA Corporation",
+    "device_version": "OpenCL 3.0 CUDA",
+    "driver_version": "581.42",
+    "opencl_api_version": "OpenCL 3.0 CUDA",
+    "opencl_c_version": "OpenCL C 1.2 ",
+    "platform_name": "NVIDIA CUDA",
+    "platform_version": "OpenCL 3.0 CUDA 13.0.94",
+    "device_memory_mb": 11263,
+    "max_work_group_size": 1024,
+    "compute_units": 68,
+    "os_name": "Windows",
+    "os_version": "Windows"
+  },
+  "gpu_events": [
+    {
+      "event_name": "H2D_Transfer",
+      "queue_time_ms": 0.099328,
+      "wait_time_ms": 14.318848,
+      "execution_time_ms": 51.191552,
+      "total_time_ms": 65.609728
+    },
+    {
+      "event_name": "FractionalDelay_Kernel",
+      "queue_time_ms": 0.003328,
+      "wait_time_ms": 0.009472,
+      "execution_time_ms": 2.317824,
+      "total_time_ms": 2.330624
+    },
+    {
+      "event_name": "D2H_Transfer",
+      "queue_time_ms": 0.011520,
+      "wait_time_ms": 0.017152,
+      "execution_time_ms": 52.766720,
+      "total_time_ms": 52.795392
+    }
+  ],
+  "total_gpu_time_ms": 120.735744
+}
