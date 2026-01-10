@@ -25,7 +25,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build",
+            "preLaunchTask": "build (Windows)",
             "miDebuggerPath": "/usr/bin/gdb",
             "logging": {
                 "moduleLoad": false,
@@ -60,7 +60,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build (Windows)",
             "environment": []
         },
         {
@@ -71,7 +71,7 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
-            "preLaunchTask": "build",
+            "preLaunchTask": "build (Windows)",
             "environment": []
         },
         {
@@ -93,7 +93,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build"
+            "preLaunchTask": "build (Windows)"
         }
     ]
 }
