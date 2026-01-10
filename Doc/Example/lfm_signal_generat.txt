@@ -1,0 +1,247 @@
+// ═════════════════════════════════════════════════════════════════════
+// example_usage.cpp (How to use optimized LFM generator)
+// ═════════════════════════════════════════════════════════════════════
+
+#include "lfm_signal_optimized.h"
+#include <iostream>
+#include <iomanip>
+
+using namespace radar;
+
+// ═════════════════════════════════════════════════════════════════════
+// EXAMPLE 1: Basic usage with RAII
+// ═════════════════════════════════════════════════════════════════════
+
+void example_basic_usage() {
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "EXAMPLE 1: Basic Usage\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    try {
+        // Create parameters with validation
+        LFMParameters params{
+            .f_start = 100.0f,
+            .f_stop = 500.0f,
+            .sample_rate = 8000.0f,
+            .duration = 1.0f,
+            .num_beams = 256,
+            .steering_angle = 30.0f
+        };
+        
+        std::cout << params << "\n\n";
+        
+        // Create generator
+        LFMSignalGenerator generator(params);
+        
+        // Generate signal (BASIC variant)
+        SignalBuffer buffer = generator.Generate(LFMVariant::BASIC);
+        
+        // Get statistics
+        const auto& stats = generator.GetStatistics();
+        std::cout << "\n" << stats << "\n";
+        
+        // Print sample data
+        std::cout << "\nFirst 10 samples of beam 0:\n";
+        auto* beam_0 = buffer.GetBeamData(0);
+        for (size_t i = 0; i < 10; ++i) {
+            std::cout << std::setw(3) << i << ": ("
+                      << std::setprecision(4) << beam_0[i].real() << ", "
+                      << beam_0[i].imag() << ")\n";
+        }
+        
+        std::cout << "\n✅ Success! Memory allocated: " 
+                  << buffer.MemorySizeBytes() / (1024.0 * 1024.0) << " MB\n";
+        
+    } catch (const std::exception& e) {
+        std::cerr << "❌ Error: " << e.what() << "\n";
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// EXAMPLE 2: Different variants comparison
+// ═════════════════════════════════════════════════════════════════════
+
+void example_variants_comparison() {
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "EXAMPLE 2: Variant Comparison\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    LFMParameters params{.f_start = 100.0f, .f_stop = 500.0f,
+                         .sample_rate = 8000.0f, .duration = 1.0f};
+    
+    LFMSignalGenerator generator(params);
+    
+    struct VariantInfo {
+        LFMVariant variant;
+        const char* name;
+        const char* description;
+    };
+    
+    const VariantInfo variants[] = {
+        {LFMVariant::BASIC, "BASIC", "Same signal on all beams"},
+        {LFMVariant::PHASE_OFFSET, "PHASE_OFFSET", "Array steering with phase"},
+        {LFMVariant::DELAY, "DELAY", "DOA simulation with delays"},
+        {LFMVariant::BEAMFORMING, "BEAMFORMING", "Phased array beamforming"},
+        {LFMVariant::WINDOWED, "WINDOWED", "With Hamming window"}
+    };
+    
+    std::cout << std::left << std::setw(15) << "Variant"
+              << std::setw(20) << "Time (ms)"
+              << std::setw(15) << "Peak Amp"
+              << std::setw(15) << "RMS\n";
+    std::cout << std::string(65, '-') << "\n";
+    
+    for (const auto& v : variants) {
+        try {
+            auto buffer = generator.Generate(v.variant);
+            const auto& stats = generator.GetStatistics();
+            
+            std::cout << std::left << std::setw(15) << v.name
+                      << std::setw(20) << std::fixed << std::setprecision(3) 
+                      << stats.generation_time_ms
+                      << std::setw(15) << stats.peak_amplitude
+                      << std::setw(15) << stats.rms_value << "\n";
+        } catch (const std::exception& e) {
+            std::cerr << "Error generating " << v.name << ": " << e.what() << "\n";
+        }
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// EXAMPLE 3: Generate into pre-allocated buffer (more efficient)
+// ═════════════════════════════════════════════════════════════════════
+
+void example_preallocated_buffer() {
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "EXAMPLE 3: Pre-allocated Buffer\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    try {
+        LFMParameters params{.f_start = 100.0f, .f_stop = 500.0f,
+                             .sample_rate = 8000.0f, .duration = 1.0f,
+                             .num_beams = 256};
+        
+        LFMSignalGenerator generator(params);
+        
+        // Pre-allocate buffer (better for multiple generations)
+        SignalBuffer buffer(params.num_beams, params.GetNumSamples());
+        
+        std::cout << "Buffer allocated: " << buffer.MemorySizeBytes() / (1024.0 * 1024.0) 
+                  << " MB\n\n";
+        
+        // Generate multiple variants into same buffer
+        std::cout << "Generating different variants into pre-allocated buffer:\n";
+        
+        generator.GenerateIntoBuffer(buffer, LFMVariant::BASIC);
+        std::cout << "✓ BASIC variant\n";
+        
+        generator.GenerateIntoBuffer(buffer, LFMVariant::PHASE_OFFSET);
+        std::cout << "✓ PHASE_OFFSET variant\n";
+        
+        generator.GenerateIntoBuffer(buffer, LFMVariant::WINDOWED);
+        std::cout << "✓ WINDOWED variant\n";
+        
+        std::cout << "\n✅ All variants generated successfully!\n";
+        
+    } catch (const std::exception& e) {
+        std::cerr << "❌ Error: " << e.what() << "\n";
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// EXAMPLE 4: Single beam generation (for testing)
+// ═════════════════════════════════════════════════════════════════════
+
+void example_single_beam() {
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "EXAMPLE 4: Single Beam Generation\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    try {
+        LFMParameters params{.f_start = 100.0f, .f_stop = 500.0f,
+                             .sample_rate = 8000.0f, .duration = 1.0f};
+        
+        LFMSignalGenerator generator(params);
+        
+        const size_t num_samples = params.GetNumSamples();
+        std::vector<std::complex<float>> beam_data(num_samples);
+        
+        std::cout << "Generating single beam with phase offset...\n";
+        float phase_offset = 1.57f;  // 90 degrees
+        generator.GenerateBeam(beam_data.data(), num_samples, 
+                              LFMVariant::PHASE_OFFSET, phase_offset);
+        
+        std::cout << "\nFirst 5 samples:\n";
+        for (size_t i = 0; i < 5; ++i) {
+            std::cout << std::setw(2) << i << ": ("
+                      << std::setprecision(4) << beam_data[i].real() << ", "
+                      << beam_data[i].imag() << ")\n";
+        }
+        
+        std::cout << "\n✅ Single beam generated!\n";
+        
+    } catch (const std::exception& e) {
+        std::cerr << "❌ Error: " << e.what() << "\n";
+    }
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// EXAMPLE 5: Error handling
+// ═════════════════════════════════════════════════════════════════════
+
+void example_error_handling() {
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "EXAMPLE 5: Error Handling\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    // Test 1: Invalid parameters (f_start > f_stop)
+    std::cout << "Test 1: Invalid frequency range...\n";
+    try {
+        LFMParameters bad_params{.f_start = 500.0f, .f_stop = 100.0f};
+        LFMSignalGenerator gen(bad_params);
+    } catch (const std::invalid_argument& e) {
+        std::cout << "✓ Caught: " << e.what() << "\n";
+    }
+    
+    // Test 2: Sample rate below Nyquist
+    std::cout << "\nTest 2: Sample rate below Nyquist...\n";
+    try {
+        LFMParameters nyquist_params{.f_start = 100.0f, .f_stop = 500.0f,
+                                      .sample_rate = 500.0f};  // Too low!
+        LFMSignalGenerator gen(nyquist_params);
+    } catch (const std::invalid_argument& e) {
+        std::cout << "✓ Caught: " << e.what() << "\n";
+    }
+    
+    // Test 3: Zero beams
+    std::cout << "\nTest 3: Zero beams...\n";
+    try {
+        SignalBuffer bad_buffer(0, 1000);
+    } catch (const std::invalid_argument& e) {
+        std::cout << "✓ Caught: " << e.what() << "\n";
+    }
+    
+    std::cout << "\n✅ Error handling works correctly!\n";
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// MAIN
+// ═════════════════════════════════════════════════════════════════════
+
+int main() {
+    std::cout << "\n╔═══════════════════════════════════════════════════════════╗\n"
+              << "║   LFM Signal Generator - Optimized Examples (Senior Level) ║\n"
+              << "╚═══════════════════════════════════════════════════════════╝\n";
+    
+    example_basic_usage();
+    example_variants_comparison();
+    example_preallocated_buffer();
+    example_single_beam();
+    example_error_handling();
+    
+    std::cout << "\n" << std::string(70, '=') << "\n";
+    std::cout << "All examples completed successfully! ✅\n";
+    std::cout << std::string(70, '=') << "\n\n";
+    
+    return 0;
+}

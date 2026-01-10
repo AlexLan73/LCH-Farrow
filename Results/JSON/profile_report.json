@@ -1,0 +1,13 @@
+{
+  "metrics": [
+    {
+      "name": "FractionalDelay_CPU",
+      "time_ms": 9746.491000,
+      "call_count": 1,
+      "min_time_ms": 9746.491000,
+      "max_time_ms": 9746.491000,
+      "avg_time_ms": 9746.491000
+    }
+  ],
+  "total_time_ms": 9746.491000
+}

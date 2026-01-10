@@ -1,0 +1,87 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "description": "Default configuration",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "description": "Windows with Visual Studio 2022",
+      "inherits": "default",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "OFF"
+      }
+    },
+    {
+      "name": "windows-cuda",
+      "description": "Windows with CUDA support",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "ENABLE_CUDA": "ON",
+        "CUDA_ARCH": "52; 75",
+        "TYPE_GPU": "RTX 2080ti"
+      }
+    },
+    {
+      "name": "linux-ninja",
+      "description": "Linux with Ninja",
+      "inherits": "default",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "OFF"
+      }
+    },
+    {
+      "name": "linux-cuda",
+      "description": "Linux with CUDA and Ninja",
+      "inherits": "linux-ninja",
+      "cacheVariables": {
+        "ENABLE_CUDA": "ON",
+        "CUDA_ARCH": "52; 75",
+        "TYPE_GPU": "RTX 2080ti"
+      }
+    },
+    {
+      "name": "linux-opencl",
+      "description": "Linux with OpenCL and Ninja",
+      "inherits": "linux-ninja",
+      "cacheVariables": {
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "description": "Debug configuration",
+      "inherits": "linux-ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "release",
+      "configurePreset": "linux-ninja",
+      "jobs": 4
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "jobs": 4
+    }
+  ]
+}
+
+
+//        "CUDA_ARCH": "75;86;89",
+//        "TYPE_GPU": "RTX 3060"
+ 

@@ -1,0 +1,29 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+    "C_Cpp.default.cppStandard": "c++17",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/include",
+        "${workspaceFolder}/kernels",
+        "/usr/include",
+        "/usr/local/include"
+    ],
+    "C_Cpp.default.defines": [
+        "OPENCL_ENABLED=1"
+    ],
+    "files.associations": {
+        "*.cl": "opencl"
+    },
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.configureSettings": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_OPENCL": "ON"
+    },
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "[c]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "explorer.openEditors.visible": 5    
+}

@@ -1,0 +1,38 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "linux-main",
+      "description": "Linux - Main Configuration (edit parameters here)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "OFF",
+        "CUDA_ARCH": "70;75;80"
+        "TYPE_GPU": "RTX 2080ti"        
+      }
+    }
+  ]
+}
+
+/*  
+ОДИН preset "linux-main" с параметрами:
+  - CMAKE_BUILD_TYPE: Release или Debug
+  - ENABLE_CUDA: ON/OFF
+  - ENABLE_OPENCL: ON/OFF
+  - CUDA_ARCH: 80;86;89
+  - TYPE_GPU: "RTX 30680"
+
+/*
+ОДИН preset "windows-main" с параметрами:
+  - CMAKE_BUILD_TYPE: Release или Debug
+  - ENABLE_CUDA: ON/OFF
+  - ENABLE_OPENCL: ON/OFF
+  - CUDA_ARCH: 75;80
+  ----"CUDA_ARCH": "70;75;80"  
+  - TYPE_GPU: "RTX 2080ti"
+
+
+*/

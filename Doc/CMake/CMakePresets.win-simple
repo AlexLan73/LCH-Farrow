@@ -1,0 +1,28 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "windows-main",
+      "description": "Windows - Main Configuration (edit parameters here)",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "OFF",
+        "CUDA_ARCH": "52;75;80",
+        "TYPE_GPU": "RTX 2080ti"        
+      }
+    }
+  ]
+}
+
+/*
+ОДИН preset "windows-main" с параметрами:
+  - CMAKE_BUILD_TYPE: Release или Debug
+  - ENABLE_CUDA: ON/OFF
+  - ENABLE_OPENCL: ON/OFF
+  - CUDA_ARCH: 75;80
+  - TYPE_GPU: "RTX 2080ti"
+
+*/

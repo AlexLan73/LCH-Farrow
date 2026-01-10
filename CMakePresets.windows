@@ -1,0 +1,66 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "windows-main",
+      "description": "Windows - Main Configuration (edit parameters here)",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON",
+        "CUDA_ARCH": "52;75;80",
+        "TYPE_GPU": "RTX 2080ti"
+      }
+    },
+    {
+      "name": "windows-cuda",
+      "description": "Windows with CUDA support",
+      "inherits": "windows-main",
+      "cacheVariables": {
+        "ENABLE_CUDA": "ON",
+        "ENABLE_OPENCL": "OFF"
+      }
+    },
+    {
+      "name": "windows-opencl",
+      "description": "Windows with OpenCL support",
+      "inherits": "windows-main",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "description": "Windows Debug configuration",
+      "inherits": "windows-main",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-release",
+      "configurePreset": "windows-main",
+      "jobs": 4
+    },
+    {
+      "name": "windows-cuda",
+      "configurePreset": "windows-cuda",
+      "jobs": 4
+    },
+    {
+      "name": "windows-opencl",
+      "configurePreset": "windows-opencl",
+      "jobs": 4
+    },
+    {
+      "name": "windows-debug",
+      "configurePreset": "windows-debug",
+      "jobs": 4
+    }
+  ]
+}

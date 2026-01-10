@@ -1,0 +1,230 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "default",
+      "description": "Default configuration for all platforms",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "description": "Windows with Visual Studio 2022",
+      "inherits": "default",
+      "generator": "Visual Studio 17 2022",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "windows-cuda",
+      "description": "Windows with CUDA support",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "ENABLE_CUDA": "ON",
+        "ENABLE_OPENCL": "OFF",
+        "CUDA_ARCH": "52; 75; 80",
+        "TYPE_GPU": "RTX 2080ti"
+      }
+    },
+    {
+      "name": "windows-opencl",
+      "description": "Windows with OpenCL support",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "description": "Windows Debug configuration",
+      "inherits": "windows-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-ninja",
+      "description": "Linux with Ninja",
+      "inherits": "default",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "linux-cuda",
+      "description": "Linux with CUDA and Ninja",
+      "inherits": "linux-ninja",
+      "cacheVariables": {
+        "ENABLE_CUDA": "ON",
+        "ENABLE_OPENCL": "OFF",
+        "CUDA_ARCH": "52; 75; 80",
+        "TYPE_GPU": "RTX 2080ti"
+      }
+    },
+    {
+      "name": "linux-opencl",
+      "description": "Linux with OpenCL and Ninja",
+      "inherits": "linux-ninja",
+      "cacheVariables": {
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "linux-debug",
+      "description": "Linux Debug configuration",
+      "inherits": "linux-ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "macos-ninja",
+      "description": "macOS with Ninja",
+      "inherits": "default",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "macos-opencl",
+      "description": "macOS with OpenCL support",
+      "inherits": "macos-ninja",
+      "cacheVariables": {
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "universal-opencl",
+      "description": "Universal OpenCL configuration for all platforms",
+      "inherits": [
+        "default",
+        "windows-opencl",
+        "linux-opencl",
+        "macos-opencl"
+      ],
+      "cacheVariables": {
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON"
+      }
+    },
+    {
+      "name": "universal-cuda",
+      "description": "Universal CUDA configuration for Windows/Linux",
+      "inherits": [
+        "default",
+        "windows-cuda",
+        "linux-cuda"
+      ],
+      "cacheVariables": {
+        "ENABLE_CUDA": "ON",
+        "ENABLE_OPENCL": "OFF",
+        "CUDA_ARCH": "52; 75; 80; 86; 89",
+        "TYPE_GPU": "Universal"
+      }
+    },
+    {
+      "name": "production",
+      "description": "Production build with optimizations",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON",
+        "CMAKE_CXX_FLAGS": "-O3 -march=native -DNDEBUG"
+      }
+    },
+    {
+      "name": "development",
+      "description": "Development build with debug info",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_CUDA": "OFF",
+        "ENABLE_OPENCL": "ON",
+        "CMAKE_CXX_FLAGS": "-g -O0 -Wall -Wextra"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-release",
+      "configurePreset": "windows-msvc",
+      "jobs": 4
+    },
+    {
+      "name": "windows-cuda",
+      "configurePreset": "windows-cuda",
+      "jobs": 4
+    },
+    {
+      "name": "windows-opencl",
+      "configurePreset": "windows-opencl",
+      "jobs": 4
+    },
+    {
+      "name": "windows-debug",
+      "configurePreset": "windows-debug",
+      "jobs": 4
+    },
+    {
+      "name": "linux-release",
+      "configurePreset": "linux-ninja",
+      "jobs": 4
+    },
+    {
+      "name": "linux-cuda",
+      "configurePreset": "linux-cuda",
+      "jobs": 4
+    },
+    {
+      "name": "linux-opencl",
+      "configurePreset": "linux-opencl",
+      "jobs": 4
+    },
+    {
+      "name": "linux-debug",
+      "configurePreset": "linux-debug",
+      "jobs": 4
+    },
+    {
+      "name": "macos-release",
+      "configurePreset": "macos-ninja",
+      "jobs": 4
+    },
+    {
+      "name": "macos-opencl",
+      "configurePreset": "macos-opencl",
+      "jobs": 4
+    },
+    {
+      "name": "universal-opencl",
+      "configurePreset": "universal-opencl",
+      "jobs": 4
+    },
+    {
+      "name": "universal-cuda",
+      "configurePreset": "universal-cuda",
+      "jobs": 4
+    },
+    {
+      "name": "production",
+      "configurePreset": "production",
+      "jobs": 4
+    },
+    {
+      "name": "development",
+      "configurePreset": "development",
+      "jobs": 4
+    }
+  ]
+}
