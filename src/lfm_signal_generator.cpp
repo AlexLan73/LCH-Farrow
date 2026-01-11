@@ -124,76 +124,89 @@ SignalBufferNew LFMSignalGenerator::Generate(LFMVariant variant) {
     return buffer;
 }
 
-ErrorCode LFMSignalGenerator::GenerateIntoBuffer(
-    SignalBufferNew& buffer, 
-    LFMVariant variant) {
+ErrorCode LFMSignalGenerator::GenerateIntoBuffer(SignalBufferNew& buffer, LFMVariant variant) {
+  if (!params_.IsValid()) {
+    return ErrorCode::INVALID_PARAMS;
+  }
     
-    if (!params_.IsValid()) {
-        return ErrorCode::INVALID_PARAMS;
-    }
+  if (!buffer.IsAllocated()) {
+    return ErrorCode::MEMORY_ALLOCATION_FAILED;
+  }
     
-    if (!buffer.IsAllocated()) {
-        return ErrorCode::MEMORY_ALLOCATION_FAILED;
-    }
-    
-    try {
-        const size_t num_samples = params_.GetNumSamples();
-        float wavelength = params_.GetWavelength();
-        float element_spacing = wavelength / 2.0f;
-        float steering_rad = params_.steering_angle * PI / 180.0f;
+  try {
+    const size_t num_samples = params_.GetNumSamples();
+    float wavelength = params_.GetWavelength();
+    float element_spacing = wavelength / 2.0f;
+    float steering_rad = params_.steering_angle * PI / 180.0f;
         
-        for (size_t beam = 0; beam < params_.num_beams; ++beam) {
-            auto* beam_data = buffer.GetBeamData(beam);
+    for (size_t beam = 0; beam < params_.num_beams; ++beam) {
+      auto* beam_data = buffer.GetBeamData(beam);
+
+      switch (variant) {
+        case LFMVariant::BASIC:
+          GenerateVariant_Basic(beam_data, num_samples);
+          break;
+                    
+        case LFMVariant::PHASE_OFFSET: {
+          float phase_offset = TWO_PI * beam / params_.num_beams;
+          GenerateVariant_PhaseOffset(beam_data, num_samples, phase_offset);
+          break;
+        }
+                    
+        case LFMVariant::DELAY: {
+          float delay_factor = static_cast<float>(beam) / params_.num_beams;
+          float delay_samples = delay_factor * (params_.sample_rate / (2.0f * params_.f_start));
+          GenerateVariant_Delay(beam_data, num_samples, delay_samples);
+          break;
+        }
+                    
+        case LFMVariant::BEAMFORMING: {
+          float element_pos = static_cast<float>(beam) * element_spacing;
+          float phase_shift = TWO_PI * element_pos * std::sin(steering_rad) / wavelength;
+          GenerateVariant_Beamforming(beam_data, num_samples, phase_shift);
+          break;
+        }
+                    
+        case LFMVariant::WINDOWED:
+          GenerateVariant_Windowed(beam_data, num_samples);
+          break;
+
+        case LFMVariant::ANGLE_SWEEP: {
+          // Вычисляем угол для этого луча (шаг 0.5°)
+          float angle_deg = params_.angle_start_deg + 
+                  static_cast<float>(beam) * params_.angle_step_deg;
             
-            switch (variant) {
-                case LFMVariant::BASIC:
-                    GenerateVariant_Basic(beam_data, num_samples);
-                    break;
-                    
-                case LFMVariant::PHASE_OFFSET: {
-                    float phase_offset = TWO_PI * beam / params_.num_beams;
-                    GenerateVariant_PhaseOffset(beam_data, num_samples, phase_offset);
-                    break;
-                }
-                    
-                case LFMVariant::DELAY: {
-                    float delay_factor = static_cast<float>(beam) / params_.num_beams;
-                    float delay_samples = delay_factor * (params_.sample_rate / (2.0f * params_.f_start));
-                    GenerateVariant_Delay(beam_data, num_samples, delay_samples);
-                    break;
-                }
-                    
-                case LFMVariant::BEAMFORMING: {
-                    float element_pos = static_cast<float>(beam) * element_spacing;
-                    float phase_shift = TWO_PI * element_pos * std::sin(steering_rad) / wavelength;
-                    GenerateVariant_Beamforming(beam_data, num_samples, phase_shift);
-                    break;
-                }
-                    
-                case LFMVariant::WINDOWED:
-                    GenerateVariant_Windowed(beam_data, num_samples);
-                    break;
-                    
-                default:
-                    return ErrorCode::GENERATION_FAILED;
-            }
+          // Генерируем сигнал с задержкой для этого угла
+          GenerateVariant_AngleSweep(beam_data, num_samples, angle_deg, beam);
+          break;
         }
         
-        // Compute statistics
-        float peak_amp = 0.0f;
-        float rms = 0.0f;
-        
-        const auto* raw_data = buffer.RawData();
-        for (size_t i = 0; i < buffer.GetTotalSize(); ++i) {
-            float amp = std::abs(raw_data[i]);
-            peak_amp = std::max(peak_amp, amp);
-            rms += amp * amp;
+        case LFMVariant::HETERODYNE: {
+          // Генерируем сопряжённый сигнал (для гетеродина)
+          GenerateVariant_Heterodyne(beam_data, num_samples);
+          break;
         }
+
+        default:
+            return ErrorCode::GENERATION_FAILED;
+        }
+      }
         
-        stats_.peak_amplitude = peak_amp;
-        stats_.rms_value = std::sqrt(rms / buffer.GetTotalSize());
+      // Compute statistics
+      float peak_amp = 0.0f;
+      float rms = 0.0f;
         
-        return ErrorCode::SUCCESS;
+      const auto* raw_data = buffer.RawData();
+      for (size_t i = 0; i < buffer.GetTotalSize(); ++i) {
+        float amp = std::abs(raw_data[i]);
+        peak_amp = std::max(peak_amp, amp);
+        rms += amp * amp;
+      }
+        
+      stats_.peak_amplitude = peak_amp;
+      stats_.rms_value = std::sqrt(rms / buffer.GetTotalSize());
+        
+      return ErrorCode::SUCCESS;
         
     } catch (const std::exception& e) {
         std::cerr << "Generation error: " << e.what() << std::endl;
@@ -285,6 +298,144 @@ std::pair<std::vector<std::complex<float>>, std::vector<double>>
     
     return {X, t};  // Возврат пары: вектор сигнала и вектор времени
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// МЕТОД 1: Вычисление задержки для угла (формула 5 из теории)
+// ═══════════════════════════════════════════════════════════════════════════
+
+float LFMSignalGenerator::ComputeDelayForAngle(
+    float angle_deg,
+    size_t element_index
+) const noexcept {
+    
+    // Константы
+    const float angle_rad = angle_deg * PI / 180.0f;  // Перевод в радианы
+    const float sin_angle = std::sin(angle_rad);
+    
+    // Вычисляем длину волны (для центральной частоты)
+    float f_center = (params_.f_start + params_.f_stop) / 2.0f;
+    float wavelength = SPEED_OF_LIGHT / f_center;
+    
+    // Расстояние между элементами (стандартно λ/2)
+    float element_spacing = wavelength / 2.0f;
+    
+    // Геометрическая задержка по времени (формула 4)
+    float element_position = static_cast<float>(element_index) * element_spacing;
+    float delay_time = (element_position * sin_angle) / SPEED_OF_LIGHT;
+    
+    // Переводим в отсчёты (формула 5)
+    float delay_samples = delay_time * params_.sample_rate;
+    
+    return delay_samples;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// МЕТОД 2: Создание сопряжённой копии
+// ═══════════════════════════════════════════════════════════════════════════
+
+SignalBufferNew LFMSignalGenerator::MakeConjugateCopy(
+    const SignalBufferNew& src
+) const {
+    
+    SignalBufferNew dst(src.GetNumBeams(), src.GetNumSamples());
+    
+    const std::complex<float>* src_data = src.RawData();
+    std::complex<float>* dst_data = dst.RawData();
+    
+    size_t total_size = src.GetTotalSize();
+    
+    // Стандартная операция сопряжения
+    for (size_t i = 0; i < total_size; ++i) {
+        dst_data[i] = std::conj(src_data[i]);  // Встроенная функция C++
+    }
+    
+    return dst;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// МЕТОД 3: Сопряжение на месте (экономит память)
+// ═══════════════════════════════════════════════════════════════════════════
+
+void LFMSignalGenerator::ConjugateInPlace(SignalBufferNew& buffer) const noexcept {
+    
+    std::complex<float>* data = buffer.RawData();
+    size_t total_size = buffer.GetTotalSize();
+    
+    for (size_t i = 0; i < total_size; ++i) {
+        data[i] = std::conj(data[i]);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// МЕТОД 4: Гетеродинирование (комплексное умножение)
+// ═══════════════════════════════════════════════════════════════════════════
+
+SignalBufferNew LFMSignalGenerator::Heterodyne(
+    const SignalBufferNew& rx_signal,
+    const SignalBufferNew& ref_signal
+) const {
+    
+    // Проверка размерности
+    if (rx_signal.GetTotalSize() != ref_signal.GetTotalSize()) {
+        throw std::invalid_argument(
+            "Signals must have same size for heterodyning"
+        );
+    }
+    
+    // Создаём буфер результата
+    SignalBufferNew result(rx_signal.GetNumBeams(), rx_signal.GetNumSamples());
+    
+    const std::complex<float>* rx_data = rx_signal.RawData();
+    const std::complex<float>* ref_data = ref_signal.RawData();
+    std::complex<float>* out_data = result.RawData();
+    
+    size_t total_size = rx_signal.GetTotalSize();
+    
+    // Перемножение с сопряжением на лету (без создания второго буфера)
+    for (size_t i = 0; i < total_size; ++i) {
+        // y[i] = rx[i] * conj(ref[i])
+        out_data[i] = rx_data[i] * std::conj(ref_data[i]);
+    }
+    
+    return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ПРИВАТНЫЙ МЕТОД: Генерация варианта с задержкой по углам
+// ═══════════════════════════════════════════════════════════════════════════
+
+void LFMSignalGenerator::GenerateVariant_AngleSweep(
+    std::complex<float>* beam_data,
+    size_t num_samples,
+    float angle_deg,
+    size_t element_index
+) const noexcept {
+    
+    // Вычисляем задержку для этого элемента и угла
+    float delay_samples = ComputeDelayForAngle(angle_deg, element_index);
+    
+    // Используем уже существующий метод для применения задержки
+    GenerateVariant_Delay(beam_data, num_samples, delay_samples);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ПРИВАТНЫЙ МЕТОД: Генерация варианта гетеродина (сопряжённый сигнал)
+// ═══════════════════════════════════════════════════════════════════════════
+
+void LFMSignalGenerator::GenerateVariant_Heterodyne(
+    std::complex<float>* beam_data,
+    size_t num_samples
+) const noexcept {
+    
+    // Генерируем обычный ЛЧМ
+    GenerateVariant_Basic(beam_data, num_samples);
+    
+    // Применяем сопряжение (меняем знак мнимой части)
+    for (size_t i = 0; i < num_samples; ++i) {
+        beam_data[i] = std::conj(beam_data[i]);
+    }
+}
+
 
 
 

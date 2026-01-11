@@ -25,11 +25,13 @@ constexpr float SPEED_OF_LIGHT = 3.0e8f;
 // ═════════════════════════════════════════════════════════════════════
 
 enum class LFMVariant : uint8_t {
-    BASIC = 0,              // V1: Same signal on all beams
-    PHASE_OFFSET = 1,       // V2: Array steering
-    DELAY = 2,              // V3: DOA simulation
-    BEAMFORMING = 3,        // V4: Phased array
-    WINDOWED = 4            // V5: With Hamming window
+    BASIC = 0,           // Базовый ЛЧМ для всех лучей одинаково
+    PHASE_OFFSET = 1,    // С фазовыми сдвигами (array steering)
+    DELAY = 2,           // С временными задержками
+    BEAMFORMING = 3,     // С фазовым фокусированием
+    WINDOWED = 4,        // С Hamming окном
+    ANGLE_SWEEP = 5,     // 🆕 По углам с шагом 0.5° (НОВОЕ!)
+    HETERODYNE = 6       // 🆕 Для гетеродина (сопряжённый сигнал)
 };
 
 enum class ErrorCode : int {
@@ -45,18 +47,27 @@ enum class ErrorCode : int {
 // ═════════════════════════════════════════════════════════════════════
 
 struct LFMParameters {
-    float f_start = 100.0f;
-    float f_stop = 500.0f;
-    float sample_rate = 8000.0f;
-    float duration = 1.0f;
-    size_t num_beams = 256;
-    float steering_angle = 30.0f;  // degrees
+    float f_start = 100.0f;           // Начальная частота (Гц)
+    float f_stop = 500.0f;            // Конечная частота (Гц)
+    float sample_rate = 12.0e6f;      // Частота дискретизации (12 МГц)
+    float duration = 1.0f;            // Длительность сигнала (сек)
+    size_t num_beams = 256;           // Количество лучей
+    float steering_angle = 30.0f;     // Базовый угол (градусы)
     
-    // VALIDATION
+    // 🆕 НОВЫЕ ПОЛЯ для задержки с шагом угла:
+    float angle_step_deg = 0.5f;      // Шаг по углу (градусы) - СТАНДАРТ 0.5°
+    float angle_start_deg = -60.0f;   // Начальный угол (градусы)
+    float angle_stop_deg = 60.0f;     // Конечный угол (градусы)
+    
+    // ДЛЯ ГЕТЕРОДИНА:
+    bool apply_heterodyne = false;    // Применять ли сопряжение
+    
+    // ВАЛИДАЦИЯ (обновлена)
     bool IsValid() const noexcept {
-        return f_start > 0.0f && f_stop > f_start && 
-               sample_rate > 2.0f * f_stop &&  // Nyquist criterion
-               duration > 0.0f && num_beams > 0;
+        return f_start > 0.0f && f_stop > f_start &&
+               sample_rate > 2.0f * f_stop &&
+               duration > 0.0f && num_beams > 0 &&
+               angle_step_deg > 0.0f;
     }
     
     float GetChirpRate() const noexcept {
@@ -198,6 +209,22 @@ private:
     void GenerateVariant_Beamforming(std::complex<float>* beam_data, size_t num_samples,
                                      float phase_shift) const noexcept;
     void GenerateVariant_Windowed(std::complex<float>* beam_data, size_t num_samples) const noexcept;
+
+    // 🆕 ПРИВАТНЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ:
+    
+    // Генерация варианта с задержкой по углам
+    void GenerateVariant_AngleSweep(
+        std::complex<float>* beam_data,
+        size_t num_samples,
+        float angle_deg,
+        size_t element_index
+    ) const noexcept;
+    
+    // Генерация варианта гетеродина (сопряжённый сигнал)
+    void GenerateVariant_Heterodyne(
+        std::complex<float>* beam_data,
+        size_t num_samples
+    ) const noexcept;
     
 public:
     // CONSTRUCTORS
@@ -239,6 +266,31 @@ public:
     // NEW: Generate signal with noise (vectorized, no loops)
     std::pair<std::vector<std::complex<float>>, std::vector<double>> 
                 GetSignalWithNoise(const NoiseParams& params);
+
+    // 🆕 НОВЫЙ МЕТОД 1: Генерация с задержкой по углам (0.5° шаг)
+    // Входные параметры:
+    //   - angle_deg: центральный угол в градусах
+    //   - num_angles: количество лучей (каждый на 0.5° от предыдущего)
+    //   - element_index: индекс элемента антенной решётки
+    // Возвращает: задержку в отсчётах для этого элемента и угла
+    float ComputeDelayForAngle(
+        float angle_deg,        // Угол в градусах
+        size_t element_index    // Индекс элемента (0, 1, 2, ...)
+    ) const noexcept;
+    
+    // 🆕 НОВЫЙ МЕТОД 2: Создать сопряжённую копию буфера (гетеродин)
+    SignalBufferNew MakeConjugateCopy(const SignalBufferNew& src) const;
+    
+    // 🆕 НОВЫЙ МЕТОД 3: In-place сопряжение (экономит память)
+    void ConjugateInPlace(SignalBufferNew& buffer) const noexcept;
+    
+    // 🆕 НОВЫЙ МЕТОД 4: Гетеродинирование (умножение двух сигналов)
+    // Результат: y[n] = x[n] * h[n], где h[n] = сопряжённый опорный сигнал
+    SignalBufferNew Heterodyne(
+        const SignalBufferNew& rx_signal,      // Принятый сигнал
+        const SignalBufferNew& ref_signal      // Опорный сигнал (ЛЧМ)
+    ) const;
+
 
 };
 std::ostream& operator<<(std::ostream& os, const LFMParameters& params);
