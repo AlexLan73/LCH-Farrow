@@ -30,10 +30,14 @@ int main(int argc, char* argv[]) {
     cfg.f_start = 100.0f;
     cfg.f_stop = 500.0f;
     cfg.sample_rate = 500000.0f;
-    cfg.duration = 1.0f;
-    cfg.num_beams = 128;
+    cfg.duration = -1.0f;
+    cfg.num_beams = 8;
     cfg.steering_angle = 30.0f;
-
+    cfg.count_points = 1024*8;  // Новое поле для количества точек
+    if(!cfg.IsValid()) {
+        std::cerr << "Неверные параметры конфигурации приложения\n";
+        return 1;
+    }
     Application app(cfg);
     return app.Run();
 }
