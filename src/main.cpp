@@ -7,11 +7,17 @@
 #include <CL/cl.h>
 
 #include "generator/generator_gpu.h"
+#include "examples/example_complex_vector.h"
+#include "examples/example_opencl_singleton.h"
+
 // lfm_parameters.h уже включен в generator_gpu.h
 
 using namespace radar::gpu;
 
 int main() {
+    complex_vector::run();
+    opencl_singleton_ex::run();
+
     std::cout << "═══════════════════════════════════════════════════════════\n"
               << "GeneratorGPU - Параллельная генерация ЛЧМ на GPU\n"
               << "═══════════════════════════════════════════════════════════\n\n";

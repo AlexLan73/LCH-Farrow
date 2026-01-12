@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenCL Singleton Manager - Архитектура</title>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=SQVrExPrVbbmHRCBr4AcF7CfzwlW9LAmYMhbxlTt943lkLHr0XNyVoNHHsD2Cd6ED7Q-nU6XD0w-ZyOoJwNItazEDPu6dfnePA6Lds4G4b0GIb_r4Ois8ZllMMmnWzWqprSfOS6sEHCg15c8nk9F-sqr28UJNxbQ_P1C-BJmQoFZUq6mcI6lJdyr9qgQp4cO7HHHlg4sEWviIigDDtViNIok-U6sqCAJOnMR3_wMNrVvkTUIoIgIqCZnrNGMQmCE4JpGEVC0ddMFZrjy_QfgbgXmfjGVGAy8lxngrnjhHmQjsor9erw5g4LHYszZbO2qYcZ36m2sB2Bs429Eem9ZDKq_D5DeEiI4ZlcYvPeCMIzZGbR2w1Cr2X8hfi5LPZON-RdEzZQq2115H_wHQK4DoMYXq045vekMXcMBQsrsi8w2v4QK_txP_cPw00wcJ0Wj3Va6CBiRlnIqTZvNbK4f2un9p8qn60ArerTl0DXJZHKHvvl1HnlkDxXbxzYXvfxhiaDGnRRwUTWk0egvYNylOo-XLBdbQCjl0TaAhgic_juHO7RZb7mvPnX-Yt1_ao71kPjHakHNwDGi8-KgPOMgCZK8rlM7zez2MN_9s0g0726CrJJXbtRlhIbM8u909gKifJyd3-a_6gogEcnKMKKB_v5R64j3wrkFq6s98LK10cwdRkwwkH3yoLG1rbJI_dob5KG2lUECrTEQRSo5s4iv7whNJ_SMYvjFHX6QnP7YjaUqF6wVfRMa_5FSdeN73JWAKHoSICoYFWV85YVmyAn-kQbveCjQE7ZVfkeyQnJvV64OaADEprHPJrKsJsOE1EySd0IAaBJOL4kSS9McEKGOqrcrvz1VheSqwWpqLWggoEYiHZdR36TtFw_TEjdROKolUeWHjuajHSsDe1RmhPv-nyotmfMhmCOllDkerj1OoNU-F3ShlGftYY7UfLYmbKsh26CaDO2CqVu2u5u-VmvorVM7EQ3yiS1HV0p6rezcijqC0XgOVnyTgy3kxbdChoVi27hdffdZPNyODJv0yoTenEC5zSIslv_RSSu9rQ295mhdrpuB8f75KLNPzy7kfzkfHzRHfjrDbvGYx4972v8yIKI0tI6drQi1NvReWt5l1XqT9xP2SgPRh38GLKbQDDYiuTL4gYGNDWZF9GaCiv4jy6-9Qu94_P3uDP8ZPws2ND-4OT4M9qRqR9EvDUykGIbfFRDED0jgXDjY-JZsCfbNOVqEsSpWnvPbe3KlIN4qlnr9E7UtMKkG7eMipgZ_dlFLulzdQLMD10kPm7w6IuuK0x9UDdUqLarQFUlY4RHrcMQzYf6H4cLTahWHU4N5vtNBjOmTS8-uiNiCSmuSfY3KLZcQveftxqC97rrWIYZfZqHg9g8CjX4bViuLJzXTQJ0yDFYCYHJoT4LrMezXEw6AM5TW-BBLDbQzA-773M_aouBCfHjUrUPraUY2pxvlEKklV8E0qvqMQOxhaShn41Djc5HsYrNHeczVRiQLk7W_Subi84EfHd1ebhCFpm6OXCWkoNx9ExEx1TAi7yV6yl6XP9uSgc_8Dczw5HymC7H6kmoyRR6pBzKj5wBrxS-8yu9MNBx-hN_VNjWeGZL-uPLVQe0Jr5UQQZB5kcgg5j4D3luyRjO2CKpo8hqstzKirhxSsj2SVISl8km-95e0JSreje3j6-opFC0TohTOlClorgFQ7Cry0TKJFRcx4C-gAVXMN0ixKldUs-1X8CwMsBTJITIar-8QqOF0hGSyOJMlprFV2ZMQ-c3_eD0zU5Ezpm0woXhAW3cahc4Md6UlLZbsGU0X6nSMfg-xK4SVKLXAo7SoWh9E_GfpV5YL7JvLYGBWgyW7B40w0oVHk98z3rLmLcKOWFQuDltmGFaZlCgzry9Uipc8BFFg9iDL-gPBEjjxzGAsSwpOI6pzgliAB23C1GJR3SLWqdyNd5x3JWF--EIDNI4w3KB-HQ2_pL1RhiiCEFxTgNzpaWoqoocfyQSwsSYmsUNMiWI-rbvjJu-BzIXzK_CKbIi6xilRxUcxLPekgnKwOpF7O7HB6Ywhj5ANzHR8SeqomA-qBmoRq2rsSDNGo1vp5S0EP_D5529goKwJf5D5-vpGP5TkASWUkVGZvR1Svs52YWvdlWT_HhRbsPewvEVJGe9DIF_Wj6WPo0zvAvCaYCF6hWG6-rIQAX6H4zTH32pwft8i3fysgeAy752cGSJYUzsQ8Kex52e6RntKNaOEa72uy0u24SAQ93Zfl5PSK4IlsynRwhIl7oxszqMf1GU0DYzUBw2QoNGZMj9UqREsemZBCccnx1ZmZ24mELAl_qZaeNinaHNvm2mn-R4" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9wcGwtYWktY29kZS1pbnRlcnByZXRlci1maWxlcy5zMy5hbWF6b25hd3MuY29tL3dlYi9kaXJlY3QtZmlsZXMvN2VlMmYxZTJlMzc3ZTUyZDcyMTE4ZWVjYzY4ZTg4YzIvZTU0YzlkMjktMGM5Yy00MTQ3LTlmNTMtZTExZjBjYzMzZTNjL2NhbnZhcy1hcHAvaW5kZXguaHRtbD9yZXNwb25zZS1jb250ZW50LWRpc3Bvc2l0aW9uPWF0dGFjaG1lbnQlM2IlMjBmaWxlbmFtZSUzZE9wZW5DTCUyMFNpbmdsZXRvbiUyME1hbmFnZXIuaHRtbCUzYiUyMGZpbGVuYW1lJTJhJTNkVVRGLTglMjclMjdPcGVuQ0wlMjUyMFNpbmdsZXRvbiUyNTIwTWFuYWdlci5odG1sJkFXU0FjY2Vzc0tleUlkPUFTSUEyRjNFTUVZRTZLUjRaWE9LJlNpZ25hdHVyZT1rY0NJaTR0RU1mb0FtQXA1UmtIODBwZ2VOTnMlM2QmeC1hbXotc2VjdXJpdHktdG9rZW49SVFvSmIzSnBaMmx1WDJWakVDa2FDWFZ6TFdWaGMzUXRNU0pHTUVRQ0lFVkpjR0t6cjBCYjZDbEd6YldZWDlhSkFDSllzd3R2eSUyZlF5YzB0QmZiNnRBaUJZTFUya29TMEV4QzQ1U3hjVUxwSDFtQWJtRG5qTmUwRktwT0RrMk9EZXp5cjhCQWp5JTJmJTJmJTJmJTJmJTJmJTJmJTJmJTJmJTJmJTJmOEJFQUVhRERZNU9UYzFNek13T1Rjd05TSU1uZGp6dEo3NllMeWswR3BnS3RBRVQyYlVMdlNMNGtRSmRuWjJwVGlORW5SSjdYdEp1VXpYNyUyZmhRUFZma0ZGa1k1a0tEaDRuWUR3Y25XTUMlMmI5TDJmZGVkVXk1c3lTVmFwdnFxN0lsWGt1MHh0SDJ1cWI2dWNCTGhGdFNBWFhMUXFDdW5YQ3ZkYTluS2UlMmJrdTQxTWJwamxjOXdXJTJmakRvMzhUWW84MkFRdG1LWXFwNXdMUzQlMmYyVzhOaVB1RUY3MG1vVWdVZ0w5dkdBaFA0JTJmJTJmVXJkbVZzbGhUNW5mam9HcVZzQTZoM1FZSFZLYkxpYjhKM1hsaWxHZVF4WWJrZVAycWxrQnUwN2F1YWo3clpHbG5oUzMyeGFXZ2Q3SW5wWkxHaDFxcnNmUlludWFuRnhpSzFpRDhkUDJSZjBCSGFJUktKdEUxSE1JMHJVSGk0dmJMZEVsWlBIZmNuYzVBcjlaQ0glMmJwZ1ZDRkEzd21qJTJiMW5RNlFuTjY2Rk1RY29xY3Fsa0ZKVkFhQSUyZlRBQjVPQjlTOGhIRno3Y2p3WCUyZkNXSTVNJTJiTkFLYnFJbFdjeFNkJTJmYUlJTVRCd2JDbmVWVDRwWW9NZHNucG83UCUyYnh6Zjdua0NqUjFJeXJsayUyZjFrcHVKdU9aamJxeTA4Y1g5NVUlMmIlMmJHbE1oa2NRWE95NDNpZDlROG5vMUtyTzNnUlB1JTJmeXI2cnJnNnB3NGI3OGVtbG9uZXZkQkJoZmp0Z0FVV2dUa2tKYWJzU1lmdmloZlg4RlJ6dldPNHZYdklSSkZ4ZllCZXBzMnBKcDlzdVUlMmZNYWhKU2ptQWh2bXd0eXp3SHJyVG5YZHN1WCUyYkFBazQ3THpFanRjUDI1eFdkMzZWcWJwOXpWM0hPJTJmZTZvemp5VnVWVFJibDk3ZHBNTmU0bmphWXRCd1VvWSUyZkxjZFYyYXZxdHJqU2MzUyUyYjc3eHQ5T1JvdVdvZk9XbWN3V243OTRQR3hOZ1Njb1doaVYyZlpyM1RNUEtKZDNoN0ltVzc5RVA2UFQ1NHdVS0tVUGFJN3Vlb3p5Z0NYWjBRcVE5RGxma0Z6Qm5oaFdsMnZnM1RMcDBIZUtURE55NVRMQmpxWkFWWXQ3ZVBrZVhyYzl0dktLVGd1Y2dhaUNEWVMyJTJmNUpxNkZ1elhmTFlacXl2akw0RnFiQ3clMmJLT0xKOTdTZklhS202ZTZCajVCJTJmMFMwcldEbWJ4SHNrbk4wbUZsdEZPZU5BTnhFVkJ2aGNDd1NZRHdDTyUyYnJ3JTJmSDZJOTllVlRvZ3pQbHpPRiUyYjRFTHFJSUpDS0YyVlJLUlkxa1clMmZXMW0lMmZaJTJiRkdKdlpqRkFKV3JWZDFOQ2JvUSUyYkZhbkcxNUdQMTVVdklmQllvTlhjeTZnRlElM2QlM2QmRXhwaXJlcz0xNzY4MjM5NjM3"/><style>
+        :root {
+            --color-bg-primary: #0f1419;
+            --color-surface: #1a1f26;
+            --color-text-primary: #e1e8ed;
+            --color-primary: #00d9ff;
+            --color-success: #00ff88;
+            --color-warning: #ffaa00;
+            --color-error: #ff3333;
+            --color-border: #2a3842;
+        }
+        
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 { color: var(--color-primary); margin: 0 0 10px 0; }
+        h2 { color: var(--color-success); margin: 20px 0 10px 0; font-size: 18px; }
+        h3 { color: var(--color-warning); margin: 15px 0 8px 0; font-size: 16px; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .card.full { grid-column: 1 / -1; }
+        .card.success { border-left: 4px solid var(--color-success); }
+        .card.error { border-left: 4px solid var(--color-error); }
+        
+        code {
+            background: rgba(0, 217, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--color-primary);
+            font-size: 13px;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .code-block code {
+            background: none;
+            padding: 0;
+            color: #888;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        th {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .badge.success { background: rgba(0, 255, 136, 0.2); color: var(--color-success); }
+        .badge.warning { background: rgba(255, 170, 0, 0.2); color: var(--color-warning); }
+        .badge.error { background: rgba(255, 51, 51, 0.2); color: var(--color-error); }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .comparison > div {
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+        }
+        
+        .comparison .before {
+            border-left: 4px solid var(--color-error);
+            background: rgba(255, 51, 51, 0.05);
+        }
+        
+        .comparison .after {
+            border-left: 4px solid var(--color-success);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        
+        .comparison h4 {
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .comparison code {
+            display: block;
+            margin: 3px 0;
+        }
+        
+        .architecture {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid var(--color-primary);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        
+        .architecture code { color: var(--color-primary); }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+        
+        .checklist li {
+            padding: 6px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--color-success);
+            font-weight: bold;
+        }
+        
+        .checklist li.pending:before {
+            content: "○";
+            color: var(--color-warning);
+        }
+        
+        .checklist li.error:before {
+            content: "✗";
+            color: var(--color-error);
+        }
+        
+        .performance {
+            background: rgba(255, 170, 0, 0.05);
+            border: 1px solid var(--color-warning);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 13px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0 10px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .tab-button {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--color-text-primary);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            transition: all 200ms;
+        }
+        
+        .tab-button.active {
+            border-bottom-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .file-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        
+        .file-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 217, 255, 0.05);
+            border-left: 3px solid var(--color-primary);
+            border-radius: 3px;
+            font-size: 13px;
+        }
+        
+        .file-item code {
+            background: none;
+            color: var(--color-primary);
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 OpenCL Singleton Manager</h1>
+        <p><em>Унификация инициализации OpenCL для переиспользования в проектах</em></p>
+        
+        <!-- ARCHITECTURE OVERVIEW -->
+        <div class="card full success">
+            <h2>✨ Основная идея</h2>
+            <p><strong>OpenCL инициализация дорогостоящая операция (100-200 мс)</strong></p>
+            <p>Вместо того чтобы инициализировать OpenCL ВНУТРИ каждого объекта GeneratorGPU:</p>
+            <ul class="checklist">
+                <li>Создаем глобальный <code>OpenCLManager</code> (Singleton)</li>
+                <li>Инициализируем OpenCL один раз при запуске</li>
+                <li>Все объекты переиспользуют один контекст/очередь</li>
+                <li>Program cache избегает повторной компиляции одинаковых kernels</li>
+            </ul>
+        </div>
+        
+        <!-- BEFORE/AFTER -->
+        <div class="card full">
+            <h2>📊 Сравнение: ДО vs ПОСЛЕ</h2>
+            <div class="comparison">
+                <div class="before">
+                    <h4>❌ ДО (Проблемы)</h4>
+                    <code>GeneratorGPU gen1(params)</code>
+                    <code style="color: #ff6b6b;">→ Init OpenCL (200 мс)</code>
+                    <code>GeneratorGPU gen2(params)</code>
+                    <code style="color: #ff6b6b;">→ Init OpenCL (200 мс) ❌</code>
+                    <code>GeneratorGPU gen3(params)</code>
+                    <code style="color: #ff6b6b;">→ Init OpenCL (200 мс) ❌</code>
+                    <code style="margin-top: 5px; color: var(--color-error);">ИТОГО: 600 мс</code>
+                </div>
+                <div class="after">
+                    <h4>✅ ПОСЛЕ (Оптимизация)</h4>
+                    <code>OpenCLManager::Initialize()</code>
+                    <code style="color: #4ecca3;">→ Init OpenCL (200 мс)</code>
+                    <code>GeneratorGPU gen1(params)</code>
+                    <code style="color: #4ecca3;">→ Get context (0 мс) ✅</code>
+                    <code>GeneratorGPU gen2(params)</code>
+                    <code style="color: #4ecca3;">→ Get context (0 мс) ✅</code>
+                    <code style="margin-top: 5px; color: var(--color-success);">ИТОГО: 220 мс (2.7x FASTER!)</code>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ARCHITECTURE DIAGRAM -->
+        <div class="card full">
+            <h2>🏗️ Архитектура</h2>
+            <div class="architecture">
+<pre><code>OpenCLManager (Singleton)
+├─ platform_id        [ОДИН на всех]
+├─ device_id          [ОДИН на всех]  
+├─ context            [ОДИН на всех]
+├─ queue              [ОДИН на всех]
+└─ program_cache      [KEY: hash(source) → cl_program]
+       ├─ source_hash_1 → program_1
+       ├─ source_hash_2 → program_2
+       └─ source_hash_n → program_n
+
+        ↓ (переиспользование)
+
+GeneratorGPU #1 ──┐
+GeneratorGPU #2 ──┼──> OpenCLManager::GetInstance()
+GeneratorGPU #3 ──┘
+FFTProcessor   ──┘
+OtherGPUClass  ──┘</code></pre>
+            </div>
+        </div>
+        
+        <!-- FILES TO CREATE -->
+        <div class="card full">
+            <h2>📁 Файлы для создания</h2>
+            <div class="file-list">
+                <div class="file-item">
+                    <strong>1. opencl_manager.h</strong> (~250 строк)
+                    <p style="margin: 3px 0; color: #999;">Singleton class с public API, program_cache type</p>
+                </div>
+                <div class="file-item">
+                    <strong>2. opencl_manager.cpp</strong> (~350 строк)
+                    <p style="margin: 3px 0; color: #999;">GetInstance(), Initialize(), GetOrCompileProgram() с кэшем</p>
+                </div>
+                <div class="file-item">
+                    <strong>3. generator_gpu_refactored.h</strong> (~200 строк)
+                    <p style="margin: 3px 0; color: #999;">Обновленный GeneratorGPU с ссылкой на Manager</p>
+                </div>
+                <div class="file-item">
+                    <strong>4. generator_gpu_refactored.cpp</strong> (~300 строк)
+                    <p style="margin: 3px 0; color: #999;">Переписанная инициализация и компиляция kernels</p>
+                </div>
+                <div class="file-item">
+                    <strong>5. example_opencl_singleton.cpp</strong> (~150 строк)
+                    <p style="margin: 3px 0; color: #999;">Демонстрация использования для разных проектов</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API SPECIFICATION -->
+        <div class="card full">
+            <h2>🔌 OpenCLManager API</h2>
+            
+            <h3>Основные методы:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Метод</th>
+                        <th>Описание</th>
+                        <th>Использование</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>GetInstance()</code></td>
+                        <td>Получить Singleton объект</td>
+                        <td><code>auto& mgr = OpenCLManager::GetInstance();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Initialize(device_type)</code></td>
+                        <td>Инициализировать OpenCL (one-time)</td>
+                        <td><code>OpenCLManager::Initialize(CL_DEVICE_TYPE_GPU);</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GetContext()</code></td>
+                        <td>Получить контекст OpenCL</td>
+                        <td><code>cl_context ctx = mgr.GetContext();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GetQueue()</code></td>
+                        <td>Получить очередь команд</td>
+                        <td><code>cl_command_queue q = mgr.GetQueue();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GetDevice()</code></td>
+                        <td>Получить устройство (device)</td>
+                        <td><code>cl_device_id dev = mgr.GetDevice();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GetPlatform()</code></td>
+                        <td>Получить платформу (platform)</td>
+                        <td><code>cl_platform_id plat = mgr.GetPlatform();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GetOrCompileProgram(source)</code></td>
+                        <td>Получить программу (с кэшем)</td>
+                        <td><code>auto prog = mgr.GetOrCompileProgram(kernel_src);</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>GetDeviceInfo()</code></td>
+                        <td>Информация об устройстве</td>
+                        <td><code>std::string info = mgr.GetDeviceInfo();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Cleanup()</code></td>
+                        <td>Очистить ресурсы</td>
+                        <td><code>OpenCLManager::Cleanup();</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- REFACTORING PLAN -->
+        <div class="card full">
+            <h2>🔧 План рефакторинга GeneratorGPU</h2>
+            
+            <h3>Что УДАЛИТЬ из GeneratorGPU:</h3>
+            <ul class="checklist">
+                <li><code>cl_platform_id platform_</code> → в OpenCLManager</li>
+                <li><code>cl_device_id device_</code> → в OpenCLManager</li>
+                <li><code>cl_context context_</code> → берем из Manager</li>
+                <li><code>cl_command_queue queue_</code> → берем из Manager</li>
+                <li><code>InitializeOpenCL()</code> → переписать (вызов Manager)</li>
+                <li>Деструктор: не освобождаем context/queue (Manager это делает)</li>
+            </ul>
+            
+            <h3>Что ДОБАВИТЬ в GeneratorGPU:</h3>
+            <ul class="checklist">
+                <li><code>OpenCLManager& manager_</code> → ссылка на Singleton</li>
+                <li><code>context_</code> → локальная копия (для удобства)</li>
+                <li><code>queue_</code> → локальная копия (для удобства)</li>
+                <li><code>CompileKernels()</code> → использовать Manager::GetOrCompileProgram()</li>
+            </ul>
+        </div>
+        
+        <!-- PERFORMANCE IMPACT -->
+        <div class="card full">
+            <h2>📈 Ожидаемый прирост производительности</h2>
+            
+            <h3>Время инициализации (3x GeneratorGPU):</h3>
+            <div class="performance">
+                <strong>ДО:</strong> 200 + 200 + 200 = <span style="color: var(--color-error);">600 мс</span><br>
+                <strong>ПОСЛЕ:</strong> 200 (Manager) + 0 + 0 = <span style="color: var(--color-success);">200 мс</span><br>
+                <strong>Ускорение:</strong> <span style="color: var(--color-success);">3x FASTER! 🚀</span>
+            </div>
+            
+            <h3>Использование памяти:</h3>
+            <div class="performance">
+                <strong>ДО:</strong> 3 × 50 MB (3 contexts) = <span style="color: var(--color-error);">150 MB</span><br>
+                <strong>ПОСЛЕ:</strong> 1 × 50 MB (1 context) = <span style="color: var(--color-success);">50 MB</span><br>
+                <strong>Экономия:</strong> <span style="color: var(--color-success);">200 MB! 🎉</span>
+            </div>
+            
+            <h3>Program cache эффект:</h3>
+            <div class="performance">
+                <strong>Сценарий:</strong> 10x GeneratorGPU с одинаковыми kernels<br>
+                <strong>ДО:</strong> 10x компиляция (10 × 50 мс) = 500 мс<br>
+                <strong>ПОСЛЕ:</strong> 1x компиляция + 9x cache (50 + 0 мс) = 50 мс<br>
+                <strong>Ускорение:</strong> <span style="color: var(--color-success);">10x FASTER! ⚡</span>
+            </div>
+        </div>
+        
+        <!-- USAGE EXAMPLE -->
+        <div class="card full">
+            <h2>💡 Пример использования</h2>
+            
+            <h3>В main.cpp:</h3>
+            <div class="code-block">
+<pre><code>#include "opencl_manager.h"
+#include "generator_gpu.h"
+
+int main() {
+    // 1️⃣ Инициализация (ONE-TIME)
+    OpenCLManager::Initialize(CL_DEVICE_TYPE_GPU);
+    
+    // 2️⃣ Создание объектов (используют ОДИН контекст)
+    LFMParameters params1{...};
+    GeneratorGPU gen1(params1);
+    
+    LFMParameters params2{...};
+    GeneratorGPU gen2(params2);  // Повторно использует контекст!
+    
+    // 3️⃣ Генерация сигналов
+    cl_mem signal1 = gen1.signal_base();
+    cl_mem signal2 = gen2.signal_base();
+    
+    // 4️⃣ Доступ к контексту (если нужен)
+    auto& mgr = OpenCLManager::GetInstance();
+    cl_context ctx = mgr.GetContext();
+    
+    return 0;
+}</code></pre>
+            </div>
+        </div>
+        
+        <!-- MIGRATION GUIDE -->
+        <div class="card full">
+            <h2>🔄 Миграция старого кода</h2>
+            
+            <h3>ДО:</h3>
+            <div class="code-block">
+<pre><code>GeneratorGPU gen(params);  // InitializeOpenCL() вызывается внутри
+cl_mem output = gen.signal_base();</code></pre>
+            </div>
+            
+            <h3>ПОСЛЕ:</h3>
+            <div class="code-block">
+<pre><code>OpenCLManager::Initialize();  // один раз в main()
+GeneratorGPU gen(params);      // без инициализации
+cl_mem output = gen.signal_base();</code></pre>
+            </div>
+            
+            <h3>Результат:</h3>
+            <ul class="checklist">
+                <li>Код выглядит одинаково (для пользователя)</li>
+                <li>Производительность улучшается автоматически</li>
+                <li>Можно использовать разные GPU классы (FFT, etc)</li>
+            </ul>
+        </div>
+        
+        <!-- NEXT STEPS -->
+        <div class="card full error">
+            <h2>⚡ Следующие шаги</h2>
+            <ol style="margin: 10px 0; padding-left: 20px;">
+                <li>Создать <code>opencl_manager.h</code></li>
+                <li>Реализовать <code>opencl_manager.cpp</code></li>
+                <li>Обновить <code>generator_gpu.h/cpp</code></li>
+                <li>Создать примеры использования</li>
+                <li>Тестировать с разными GPU</li>
+            </ol>
+        </div>
+        
+        <div class="footer">
+            <p>OpenCL Singleton Architecture Design | Sequential Thinking Analysis</p>
+            <p>Для использования в production код</p>
+        </div>
+    </div>
+</body>
+</html>
