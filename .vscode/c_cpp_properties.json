@@ -5,13 +5,17 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include",
+                "${workspaceFolder}/include/CL",
                 "${workspaceFolder}/kernels",
+                "${workspaceFolder}/clFFT/include",
                 "/usr/include",
                 "/usr/local/include",
                 "/usr/include/CL"
             ],
             "defines": [
-                "OPENCL_ENABLED=1"
+                "OPENCL_ENABLED=1",
+                "CLFFT_FOUND=1",
+                "OPENCL_KERNEL_DIR=\"${workspaceFolder}/kernels\""
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",

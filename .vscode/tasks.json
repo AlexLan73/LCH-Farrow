@@ -7,9 +7,7 @@
             "command": "cmake",
             "args": [
                 "--build",
-                "${workspaceFolder}/build",
-                "--config",
-                "Debug"
+                "${workspaceFolder}/build"
             ],
             "group": {
                 "kind": "build",
@@ -34,8 +32,6 @@
             "args": [
                 "--build",
                 "${workspaceFolder}/build",
-                "--config",
-                "Debug",
                 "-j",
                 "$(nproc)"
             ],
@@ -47,7 +43,7 @@
             "problemMatcher": [
                 "$gcc"
             ],
-            "detail": "Сборка для Linux"
+            "detail": "Сборка для Linux (использует CMAKE_BUILD_TYPE из конфигурации)"
         },
         {
             "label": "build (Windows)",

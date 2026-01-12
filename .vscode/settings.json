@@ -4,8 +4,11 @@
     "C_Cpp.default.cppStandard": "c++17",
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/include",
+        "${workspaceFolder}/include/CL",
         "${workspaceFolder}/kernels",
+        "${workspaceFolder}/clFFT/include",
         "/usr/include",
+        "/usr/include/CL",
         "/usr/local/include"
     ],
     "C_Cpp.default.defines": [
