@@ -1,15 +1,14 @@
 #pragma once
 
-
-
+#include "signal_buffer.h"
 #include <complex>
 #include <vector>
-#include <cmath>
-#include <memory>
 #include <chrono>
 #include <stdexcept>
-#include <cassert>
-#include <signal_buffer.h>
+#include <iostream>
+#include <random>
+#include <algorithm>
+
 // ═════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═════════════════════════════════════════════════════════════════════
@@ -25,13 +24,13 @@ constexpr float SPEED_OF_LIGHT = 3.0e8f;
 // ═════════════════════════════════════════════════════════════════════
 
 enum class LFMVariant : uint8_t {
-    BASIC = 0,           // Базовый ЛЧМ для всех лучей одинаково
-    PHASE_OFFSET = 1,    // С фазовыми сдвигами (array steering)
-    DELAY = 2,           // С временными задержками
-    BEAMFORMING = 3,     // С фазовым фокусированием
-    WINDOWED = 4,        // С Hamming окном
-    ANGLE_SWEEP = 5,     // 🆕 По углам с шагом 0.5° (НОВОЕ!)
-    HETERODYNE = 6       // 🆕 Для гетеродина (сопряжённый сигнал)
+    BASIC = 0,              // Базовый ЛЧМ для всех лучей одинаково
+    PHASE_OFFSET = 1,       // С фазовыми сдвигами (array steering)
+    DELAY = 2,              // С временными задержками
+    BEAMFORMING = 3,        // С фазовым фокусированием
+    WINDOWED = 4,           // С Hamming окном
+    ANGLE_SWEEP = 5,        // 🆕 По углам с шагом 0.5° (НОВОЕ!)
+    HETERODYNE = 6          // 🆕 Для гетеродина (сопряжённый сигнал)
 };
 
 enum class ErrorCode : int {
@@ -47,41 +46,41 @@ enum class ErrorCode : int {
 // ═════════════════════════════════════════════════════════════════════
 
 struct LFMParameters {
-    float f_start = 100.0f;           // Начальная частота (Гц)
-    float f_stop = 500.0f;            // Конечная частота (Гц)
-    float sample_rate = 12.0e6f;      // Частота дискретизации (12 МГц)
-    mutable float duration = 0.0f;            // Длительность сигнала (сек)
-    size_t num_beams = 256;           // Количество лучей
-    float steering_angle = 30.0f;     // Базовый угол (градусы)
-    
+    float f_start = 100.0f;              // Начальная частота (Гц)
+    float f_stop = 500.0f;               // Конечная частота (Гц)
+    float sample_rate = 12.0e6f;         // Частота дискретизации (12 МГц)
+    mutable float duration = 0.0f;       // Длительность сигнала (сек)
+    size_t num_beams = 256;              // Количество лучей
+    float steering_angle = 30.0f;        // Базовый угол (градусы)
+
     // 🆕 НОВЫЕ ПОЛЯ для задержки с шагом угла:
-    float angle_step_deg = 0.5f;      // Шаг по углу (градусы) - СТАНДАРТ 0.5°
-    float angle_start_deg = -60.0f;   // Начальный угол (градусы)
-    float angle_stop_deg = 60.0f;     // Конечный угол (градусы)
-    mutable size_t count_points = 1024*8;     // Количество точек (отсчётов) на луч
-    
+    float angle_step_deg = 0.5f;         // Шаг по углу (градусы) - СТАНДАРТ 0.5°
+    float angle_start_deg = -60.0f;      // Начальный угол (градусы)
+    float angle_stop_deg = 60.0f;        // Конечный угол (градусы)
+    mutable size_t count_points = 1024*8;  // Количество точек (отсчётов) на луч
+
     // ДЛЯ ГЕТЕРОДИНА:
-    bool apply_heterodyne = false;    // Применять ли сопряжение
-    
+    bool apply_heterodyne = false;       // Применять ли сопряжение
+
     // ВАЛИДАЦИЯ (обновлена)
     bool IsValid() const noexcept {
         if(count_points > 0) {
-           duration = static_cast<float>(count_points) /  static_cast<float>(sample_rate);
+            duration = static_cast<float>(count_points) / static_cast<float>(sample_rate);
             // Если задано count_points, то duration игнорируется
             return f_start > 0.0f && f_stop > f_start &&
-                   sample_rate > 2.0f * f_stop &&
-                   count_points > 0 && num_beams > 0 &&
-                   angle_step_deg > 0.0f;
-        }   
+                sample_rate > 2.0f * f_stop &&
+                count_points > 0 && num_beams > 0 &&
+                angle_step_deg > 0.0f;
+        }
 
         if(duration > 0.0f) {
-           count_points = static_cast<size_t>(duration * sample_rate);
+            count_points = static_cast<size_t>(duration * sample_rate);
             // Если задано duration, то count_points игнорируется
             return f_start > 0.0f && f_stop > f_start &&
-                   sample_rate > 2.0f * f_stop &&
-                   duration > 0.0f && num_beams > 0 &&
-                   angle_step_deg > 0.0f;
-        }   
+                sample_rate > 2.0f * f_stop &&
+                duration > 0.0f && num_beams > 0 &&
+                angle_step_deg > 0.0f;
+        }
 
         return count_points > 0 && duration > 0.0f &&
             f_start > 0.0f && f_stop > f_start &&
@@ -89,15 +88,15 @@ struct LFMParameters {
             duration > 0.0f && num_beams > 0 &&
             angle_step_deg > 0.0f;
     }
-    
+
     float GetChirpRate() const noexcept {
         return (f_stop - f_start) / duration;
     }
-    
+
     size_t GetNumSamples() const noexcept {
         return static_cast<size_t>(duration * sample_rate);
     }
-    
+
     float GetWavelength() const noexcept {
         float f_center = (f_start + f_stop) / 2.0f;
         return SPEED_OF_LIGHT / f_center;
@@ -111,94 +110,15 @@ struct GenerationStatistics {
     float rms_value = 0.0f;
 };
 
-class SignalBufferNew {
-private:
-    size_t num_beams_;
-    size_t num_samples_;
-    bool is_allocated_;
-    
-public:
-    std::vector<std::complex<float>> data_;
-
-    // CONSTRUCTOR
-    explicit SignalBufferNew(size_t num_beams, size_t num_samples)
-        : num_beams_(num_beams), num_samples_(num_samples), is_allocated_(false) {
-        
-        if (num_beams == 0 || num_samples == 0) {
-            throw std::invalid_argument("num_beams and num_samples must be > 0");
-        }
-        
-        try {
-            data_.resize(num_beams * num_samples, std::complex<float>(0.0f, 0.0f));
-            is_allocated_ = true;
-        } catch (const std::bad_alloc& e) {
-            throw std::runtime_error(std::string("Memory allocation failed: ") + e.what());
-        }
-    }
-    
-    // MOVE SEMANTICS
-    SignalBufferNew(SignalBufferNew&& other) noexcept 
-        : data_(std::move(other.data_)),
-          num_beams_(other.num_beams_),
-          num_samples_(other.num_samples_),
-          is_allocated_(other.is_allocated_) {
-        other.is_allocated_ = false;
-    }
-    
-    SignalBufferNew& operator=(SignalBufferNew&& other) noexcept {
-        if (this != &other) {
-            data_ = std::move(other.data_);
-            num_beams_ = other.num_beams_;
-            num_samples_ = other.num_samples_;
-            is_allocated_ = other.is_allocated_;
-            other.is_allocated_ = false;
-        }
-        return *this;
-    }
-    
-    // DELETE COPY
-    SignalBufferNew(const SignalBufferNew&) = delete;
-    SignalBufferNew& operator=(const SignalBufferNew&) = delete;
-    
-    ~SignalBufferNew() = default;
-    
-    // ACCESSORS
-    std::complex<float>* GetBeamData(size_t beam_idx) noexcept {
-        assert(beam_idx < num_beams_ && is_allocated_);
-        return data_.data() + (beam_idx * num_samples_);
-    }
-    
-    const std::complex<float>* GetBeamData(size_t beam_idx) const noexcept {
-        assert(beam_idx < num_beams_ && is_allocated_);
-        return data_.data() + (beam_idx * num_samples_);
-    }
-    
-    size_t GetNumBeams() const noexcept { return num_beams_; }
-    size_t GetNumSamples() const noexcept { return num_samples_; }
-    size_t GetTotalSize() const noexcept { return num_beams_ * num_samples_; }
-    bool IsAllocated() const noexcept { return is_allocated_; }
-    
-    std::complex<float>* RawData() noexcept { return data_.data(); }
-    const std::complex<float>* RawData() const noexcept { return data_.data(); }
-    
-    void Clear() noexcept {
-        std::fill(data_.begin(), data_.end(), std::complex<float>(0.0f, 0.0f));
-    }
-    
-    size_t MemorySizeBytes() const noexcept {
-        return GetTotalSize() * sizeof(std::complex<float>);
-    }
-};
-
 struct NoiseParams {
-    double fd;          // sample_rate
-    double f0;          // f1 (start frequency)
-    double a;           // signal amplitude
-    double an;          // noise amplitude
-    double ti;          // duration
-    double phi = 0;     // initial phase
-    double fdev = 0;    // frequency deviation (f2 - f1)
-    double tau = 0;     // time shift
+    double fd;              // sample_rate
+    double f0;              // f1 (start frequency)
+    double a;               // signal amplitude
+    double an;              // noise amplitude
+    double ti;              // duration
+    double phi = 0;         // initial phase
+    double fdev = 0;        // frequency deviation (f2 - f1)
+    double tau = 0;         // time shift
 };
 
 // ═════════════════════════════════════════════════════════════════════
@@ -209,213 +129,106 @@ class LFMSignalGenerator {
 private:
     const LFMParameters params_;
     mutable GenerationStatistics stats_;
-    
+
     // HELPER METHODS
     inline std::complex<float> GenerateComplexSample(float phase) const noexcept {
         return std::complex<float>(std::cos(phase), std::sin(phase));
     }
-    
+
     inline float ComputePhase(float t, float phase_offset = 0.0f) const noexcept {
         float chirp_rate = params_.GetChirpRate();
         return TWO_PI * (params_.f_start * t + 0.5f * chirp_rate * t * t) + phase_offset;
     }
-    
+
     // PRIVATE GENERATION METHODS
     void GenerateVariant_Basic(std::complex<float>* beam_data, size_t num_samples) const noexcept;
+
     void GenerateVariant_PhaseOffset(std::complex<float>* beam_data, size_t num_samples,
-                                     float phase_offset) const noexcept;
+        float phase_offset) const noexcept;
+
     void GenerateVariant_Delay(std::complex<float>* beam_data, size_t num_samples,
-                               float delay_samples) const noexcept;
+        float delay_samples) const noexcept;
+
     void GenerateVariant_Beamforming(std::complex<float>* beam_data, size_t num_samples,
-                                     float phase_shift) const noexcept;
+        float phase_shift) const noexcept;
+
     void GenerateVariant_Windowed(std::complex<float>* beam_data, size_t num_samples) const noexcept;
 
     // 🆕 ПРИВАТНЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ:
-    
-    // Генерация варианта с задержкой по углам
     void GenerateVariant_AngleSweep(
         std::complex<float>* beam_data,
         size_t num_samples,
         float angle_deg,
         size_t element_index
     ) const noexcept;
-    
-    // Генерация варианта гетеродина (сопряжённый сигнал)
+
     void GenerateVariant_Heterodyne(
         std::complex<float>* beam_data,
         size_t num_samples
     ) const noexcept;
-    
+
 public:
     // CONSTRUCTORS
     explicit LFMSignalGenerator(const LFMParameters& params)
         : params_(params) {
-        
         if (!params_.IsValid()) {
             throw std::invalid_argument("Invalid LFM parameters");
         }
     }
-    
+
     explicit LFMSignalGenerator(float f_start, float f_stop, float sample_rate, float duration)
         : LFMSignalGenerator(LFMParameters{f_start, f_stop, sample_rate, duration, 256, 30.0f}) {
     }
-    
+
     // MOVE SEMANTICS
     LFMSignalGenerator(LFMSignalGenerator&&) = default;
     LFMSignalGenerator& operator=(LFMSignalGenerator&&) = default;
-    
+
     // DELETE COPY
     LFMSignalGenerator(const LFMSignalGenerator&) = delete;
     LFMSignalGenerator& operator=(const LFMSignalGenerator&) = delete;
-    
+
     virtual ~LFMSignalGenerator() = default;
-    
+
     // MAIN API
-    SignalBufferNew Generate(LFMVariant variant = LFMVariant::BASIC);
-    
-    ErrorCode GenerateIntoBuffer(SignalBufferNew& buffer, LFMVariant variant = LFMVariant::BASIC);
-    
+    SignalBuffer Generate(LFMVariant variant = LFMVariant::BASIC);
+
+    ErrorCode GenerateIntoBuffer(SignalBuffer& buffer, LFMVariant variant = LFMVariant::BASIC);
+
     // SINGLE BEAM GENERATION
     void GenerateBeam(std::complex<float>* beam_data, size_t num_samples,
-                     LFMVariant variant, float beam_param = 0.0f) const;
-    
+        LFMVariant variant, float beam_param = 0.0f) const;
+
     // GETTERS
     const LFMParameters& GetParameters() const noexcept { return params_; }
+
     const GenerationStatistics& GetStatistics() const noexcept { return stats_; }
 
     // NEW: Generate signal with noise (vectorized, no loops)
-    std::pair<std::vector<std::complex<float>>, std::vector<double>> 
-                GetSignalWithNoise(const NoiseParams& params);
+    std::pair<std::vector<std::complex<float>>, std::vector<double>>
+    GetSignalWithNoise(const NoiseParams& params);
 
     // 🆕 НОВЫЙ МЕТОД 1: Генерация с задержкой по углам (0.5° шаг)
-    // Входные параметры:
-    //   - angle_deg: центральный угол в градусах
-    //   - num_angles: количество лучей (каждый на 0.5° от предыдущего)
-    //   - element_index: индекс элемента антенной решётки
-    // Возвращает: задержку в отсчётах для этого элемента и угла
     float ComputeDelayForAngle(
-        float angle_deg,        // Угол в градусах
-        size_t element_index    // Индекс элемента (0, 1, 2, ...)
+        float angle_deg,      // Угол в градусах
+        size_t element_index  // Индекс элемента (0, 1, 2, ...)
     ) const noexcept;
-    
+
     // 🆕 НОВЫЙ МЕТОД 2: Создать сопряжённую копию буфера (гетеродин)
-    SignalBufferNew MakeConjugateCopy(const SignalBufferNew& src) const;
-    
+    SignalBuffer MakeConjugateCopy(const SignalBuffer& src) const;
+
     // 🆕 НОВЫЙ МЕТОД 3: In-place сопряжение (экономит память)
-    void ConjugateInPlace(SignalBufferNew& buffer) const noexcept;
-    
+    void ConjugateInPlace(SignalBuffer& buffer) const noexcept;
+
     // 🆕 НОВЫЙ МЕТОД 4: Гетеродинирование (умножение двух сигналов)
     // Результат: y[n] = x[n] * h[n], где h[n] = сопряжённый опорный сигнал
-    SignalBufferNew Heterodyne(
-        const SignalBufferNew& rx_signal,      // Принятый сигнал
-        const SignalBufferNew& ref_signal      // Опорный сигнал (ЛЧМ)
+    SignalBuffer Heterodyne(
+        const SignalBuffer& rx_signal,  // Принятый сигнал
+        const SignalBuffer& ref_signal  // Опорный сигнал (ЛЧМ)
     ) const;
-
-
 };
+
 std::ostream& operator<<(std::ostream& os, const LFMParameters& params);
 std::ostream& operator<<(std::ostream& os, const GenerationStatistics& stats);
 
-}  // namespace radar
-
-
-/*
-#include <complex>
-#include <vector>
-
-enum class LFMVariant : int {
-    V1 = 1,
-    V2 = 2,
-    V3 = 3,
-    V4 = 4,
-    V5 = 5
-  };
-
-class LFMSignalGenerator
-{
-  
-public:
-  LFMSignalGenerator(float f_start, float f_stop, float sample_rate, float duration);
-  void GenerateBeam(std::complex<float>* beam_data, size_t num_samples,
-                      float phase_offset = 0.0f, float delay_samples = 0.0f);    
-
-  void GenerateAllBeams(std::vector<std::complex<float>*>& beam_data_ptrs,
-                          size_t num_samples, size_t num_beams,
-                          const std::vector<float>& delays = {});
-  ~LFMSignalGenerator();
-
-*/
-
-/**
-* ═════════════════════════════════════════════════════════════════════
-* Генерация ЛЧМ (LFM - Linear Frequency Modulation) сигнала
-* на num_beams каналов
-* ═════════════════════════════════════════════════════════════════════
-*/
-
-/**
-* ═════════════════════════════════════════════════════════════════════
-*  ВАРИАНТ 1: Базовый ЛЧМ для всех лучей (одинаковый сигнал)
-* ═════════════════════════════════════════════════════════════════════
-* ПАРАМЕТРЫ ЛЧМ СИГНАЛА
-*  float f_start = 100.0f;              Начальная частота (Гц)
-*  float f_stop = 500.0f;               Конечная частота (Гц)
-*  float sample_rate = 8000.0f;         Частота дискретизации (Гц)
-*  float duration = 1.0f;               Длительность сигнала (сек)
-*  size_t num_beams = 256;              Количество лучей (каналов)
-*  LFMVariant var 1                     Варинт сигнала
-*/  
-/*
-  void BaseLFM(std::vector<std::complex<float>*>& beam_data_ptrs,
-              const float f_start,      // Начальная частота (Гц)
-              const float f_stop,       // Конечная частота (Гц)
-              const float sample_rate,  // Частота дискретизации (Гц)
-              const float duration,     // Длительность сигнала (сек)
-              const size_t num_beams,   // Количество лучей (каналов)
-              const LFMVariant var=LFMVariant::V1);    // 
-  
-private:
-    float f_start_;
-    float f_stop_;
-    float sample_rate_;
-    float duration_;
-    float chirp_rate_;
-  void LFM_v1(std::vector<std::complex<float>*>& beam_data_ptrs,
-              const float f_start,      // Начальная частота (Гц)
-              const float f_stop,       // Конечная частота (Гц)
-              const float sample_rate,  // Частота дискретизации (Гц)
-              const float duration,     // Длительность сигнала (сек)
-              const size_t num_beams);  // Количество лучей (каналов)
-
-  void LFM_v2(std::vector<std::complex<float>*>& beam_data_ptrs,
-              const float f_start,      // Начальная частота (Гц)
-              const float f_stop,       // Конечная частота (Гц)
-              const float sample_rate,  // Частота дискретизации (Гц)
-              const float duration,     // Длительность сигнала (сек)
-              const size_t num_beams);  // Количество лучей (каналов)
-
-  void LFM_v3(std::vector<std::complex<float>*>& beam_data_ptrs,
-              const float f_start,      // Начальная частота (Гц)
-              const float f_stop,       // Конечная частота (Гц)
-              const float sample_rate,  // Частота дискретизации (Гц)
-              const float duration,     // Длительность сигнала (сек)
-              const size_t num_beams);  // Количество лучей (каналов)
-
-  void LFM_v4(std::vector<std::complex<float>*>& beam_data_ptrs,
-              const float f_start,      // Начальная частота (Гц)
-              const float f_stop,       // Конечная частота (Гц)
-              const float sample_rate,  // Частота дискретизации (Гц)
-              const float duration,     // Длительность сигнала (сек)
-              const size_t num_beams);  // Количество лучей (каналов)
-
-  void LFM_v5(std::vector<std::complex<float>*>& beam_data_ptrs,
-              const float f_start,      // Начальная частота (Гц)
-              const float f_stop,       // Конечная частота (Гц)
-              const float sample_rate,  // Частота дискретизации (Гц)
-              const float duration,     // Длительность сигнала (сек)
-              const size_t num_beams);  // Количество лучей (каналов)
-              
-
-};
-
-*/
+} // namespace radar
