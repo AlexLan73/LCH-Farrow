@@ -404,6 +404,7 @@ if(OPENCL_ENABLED)
         src/fractional_delay_cpu.cpp
         src/result_comparator.cpp
         src/gpu_profiling.cpp
+        src/generator/generator_gpu.cpp
     )
     list(APPEND HEADERS
         include/signal_buffer.h
@@ -418,6 +419,7 @@ if(OPENCL_ENABLED)
         include/fractional_delay_cpu.h
         include/result_comparator.h
         include/gpu_profiling.h
+        include/generator/generator_gpu.h
     )
     message(STATUS "✅ OpenCL источники добавлены")
 endif()

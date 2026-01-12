@@ -9,7 +9,7 @@
             "program": "${workspaceFolder}/build/LCH-Farrow",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
@@ -23,6 +23,11 @@
                     "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Show source code in disassembly",
+                    "text": "-gdb-set disassemble-next-line on",
+                    "ignoreFailures": true
                 }
             ],
             "preLaunchTask": "build (Linux)",
@@ -33,7 +38,9 @@
                 "engineLogging": false,
                 "programOutput": true,
                 "exceptions": true
-            }
+            },
+            "justMyCode": false,
+            "showDisplayString": true
         },
         {
             "name": "Debug LCH-Farrow (Linux, Attach to Process)",

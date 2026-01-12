@@ -49,7 +49,7 @@ int Application::Run() {
 
 bool Application::GenerateSignal() {
     std::cout << "Генерация ЛЧМ сигнала...\n";
-    radar::LFMParameters lfm_params;
+    LFMParameters lfm_params;
     lfm_params.f_start = cfg_.f_start;
     lfm_params.f_stop = cfg_.f_stop;
     lfm_params.sample_rate = cfg_.sample_rate;

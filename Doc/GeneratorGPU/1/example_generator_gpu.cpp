@@ -1,14 +1,20 @@
+/*
+ * ═════════════════════════════════════════════════════════════════════
+ * ПРИМЕР ИСПОЛЬЗОВАНИЯ GeneratorGPU
+ * ═════════════════════════════════════════════════════════════════════
+ * 
+ * Демонстрирует использование класса GeneratorGPU для:
+ * 1. Генерации базового ЛЧМ сигнала на GPU
+ * 2. Генерации ЛЧМ сигнала с дробной задержкой
+ * 3. Трансфера данных GPU → CPU для проверки
+ */
+
+#include "generator_gpu.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include <complex>
-#include <algorithm>
 
-#include <CL/cl.h>
-
-#include "generator/generator_gpu.h"
-// lfm_parameters.h уже включен в generator_gpu.h
-
+using namespace radar;
 using namespace radar::gpu;
 
 int main() {
@@ -25,7 +31,7 @@ int main() {
         params.f_start = 100.0f;           // 100 Гц
         params.f_stop = 500.0f;            // 500 Гц
         params.sample_rate = 12.0e6f;      // 12 МГц
-        params.duration = 0.01f;            // 0.1 сек
+        params.duration = 0.1f;            // 0.1 сек
         params.num_beams = 256;            // 256 лучей
         params.steering_angle = 30.0f;     // 30 градусов
         
@@ -172,3 +178,28 @@ int main() {
     return 0;
 }
 
+/*
+ * ═════════════════════════════════════════════════════════════════════
+ * КОМПИЛЯЦИЯ:
+ * ═════════════════════════════════════════════════════════════════════
+ * 
+ * g++ -O3 -std=c++17 \
+ *     -I/opt/rocm/include \
+ *     -I./include \
+ *     -o test_generator_gpu \
+ *     example_generator_gpu.cpp \
+ *     src/generator/generator_gpu.cpp \
+ *     src/signal_buffer.cpp \
+ *     src/lfm_signal_generator.cpp \
+ *     -L/opt/rocm/lib \
+ *     -lOpenCL \
+ *     -lm
+ * 
+ * ═════════════════════════════════════════════════════════════════════
+ * ЗАПУСК:
+ * ═════════════════════════════════════════════════════════════════════
+ * 
+ * ./test_generator_gpu
+ * 
+ * ═════════════════════════════════════════════════════════════════════
+ */
